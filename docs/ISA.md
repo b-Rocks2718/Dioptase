@@ -37,29 +37,29 @@ Opcode is 00000
 
 (x -> unused bits)
 
-Bitwise logic:
-00000aaaaabbbbbxxxxxxx00000ccccc - and   rA, rB, rC
-00000aaaaabbbbbxxxxxxx00001ccccc - nand rA, rB, rC
-00000aaaaabbbbbxxxxxxx00010ccccc - or      rA, rB, rC
-00000aaaaabbbbbxxxxxxx00011ccccc - nor    rA, rB, rC
-00000aaaaabbbbbxxxxxxx00100ccccc - xor    rA, rB, rC
-00000aaaaabbbbbxxxxxxx00101ccccc - xnor  rA, rB, rC
-00000aaaaaxxxxxxxxxxxx00110ccccc -  not    rA, rC
+Bitwise logic:  
+00000aaaaabbbbbxxxxxxx00000ccccc - and   rA, rB, rC  
+00000aaaaabbbbbxxxxxxx00001ccccc - nand rA, rB, rC    
+00000aaaaabbbbbxxxxxxx00010ccccc - or      rA, rB, rC  
+00000aaaaabbbbbxxxxxxx00011ccccc - nor    rA, rB, rC  
+00000aaaaabbbbbxxxxxxx00100ccccc - xor    rA, rB, rC  
+00000aaaaabbbbbxxxxxxx00101ccccc - xnor  rA, rB, rC  
+00000aaaaaxxxxxxxxxxxx00110ccccc -  not    rA, rC  
 
-shifts:
-00000aaaaabbbbbxxxxxxx00111ccccc - lsl      rA, rB, rC (logical shift left)
-00000aaaaabbbbbxxxxxxx01000ccccc - lsr     rA, rB, rC (logical shift right)
-00000aaaaabbbbbxxxxxxx01001ccccc - asr    rA, rB, rC (arithmetic shift right)
-00000aaaaabbbbbxxxxxxx01010ccccc - rotl    rA, rB, rC (rotate left)
-00000aaaaabbbbbxxxxxxx01011ccccc - rotr    rA, rB, rC (rotate right)
-00000aaaaabbbbbxxxxxxx01100ccccc - shlc   rA, rB, rC (shift left through carry)
-00000aaaaabbbbbxxxxxxx01101ccccc - shrc   rA, rB, rC (shift right through carry)
+shifts:  
+00000aaaaabbbbbxxxxxxx00111ccccc - lsl      rA, rB, rC (logical shift left)  
+00000aaaaabbbbbxxxxxxx01000ccccc - lsr     rA, rB, rC (logical shift right)  
+00000aaaaabbbbbxxxxxxx01001ccccc - asr    rA, rB, rC (arithmetic shift right)  
+00000aaaaabbbbbxxxxxxx01010ccccc - rotl    rA, rB, rC (rotate left)  
+00000aaaaabbbbbxxxxxxx01011ccccc - rotr    rA, rB, rC (rotate right)  
+00000aaaaabbbbbxxxxxxx01100ccccc - shlc   rA, rB, rC (shift left through carry)  
+00000aaaaabbbbbxxxxxxx01101ccccc - shrc   rA, rB, rC (shift right through carry)  
 
-arithmetic:
-00000aaaaabbbbbxxxxxxx01110ccccc - add   rA, rB, rC
-00000aaaaabbbbbxxxxxxx01111ccccc - addc  rA, rB, rC (add with carry)
-00000aaaaabbbbbxxxxxxx10000ccccc - sub   rA, rB, rC
-00000aaaaabbbbbxxxxxxx10001ccccc - subb  rA, rB, rC (subtract with borrow)
+arithmetic:  
+00000aaaaabbbbbxxxxxxx01110ccccc - add   rA, rB, rC  
+00000aaaaabbbbbxxxxxxx01111ccccc - addc  rA, rB, rC (add with carry)  
+00000aaaaabbbbbxxxxxxx10000ccccc - sub   rA, rB, rC  
+00000aaaaabbbbbxxxxxxx10001ccccc - subb  rA, rB, rC (subtract with borrow)  
 00000aaaaabbbbbxxxxxxx10010ccccc - mul   rA, rB, rC
 
 Plenty of instruction space to expand this over time
@@ -72,7 +72,7 @@ Opcode is 00001
 
 (x -> unused bits)
 
-Bitwise logic:  
+Bitwise logic:   
 yy is 2 bit code used to decode immediate  
 i is 8 bit immediate
 
@@ -104,9 +104,9 @@ Arithmetic:
 i is 12 bit immediate, sign extended to 32 bits
 00001aaaaabbbbb01110iiiiiiiiiiii  - add    rA, rB, i  
 00001aaaaabbbbb01111iiiiiiiiiiii -  addc  rA, rB, i  
-00001aaaaabbbbb10000iiiiiiiiiiii - sub    rA, rB, i // not really necessary
-00001aaaaabbbbb10001iiiiiiiiiiii - subb  rA, rB, i  
-00001aaaaabbbbb10010iiiiiiiiiiii - mul    rA, rB, i
+00001aaaaabbbbb10000iiiiiiiiiiii - sub    rA, rB, i // not really necessary  
+00001aaaaabbbbb10001iiiiiiiiiiii - subb  rA, rB, i   
+00001aaaaabbbbb10010iiiiiiiiiiii - mul    rA, rB, i  
 
 some instruction space to expand this over time
 
@@ -175,25 +175,25 @@ Branch and link register
 5 bit branch code determines which condition to use.
 If condition is met, branches to rB and stores pc + 1 in rA (set rA as r0 if you don’t want to save it)
 
-0010100000xxxxxxxxxxxxaaaaabbbbb - brl rA, rB     (unconditional branch)
-0010100001xxxxxxxxxxxxaaaaabbbbb - bzl rA, rB     (branch if zero)
-0010100010xxxxxxxxxxxxaaaaabbbbb - bnzl rA, rB   (branch if nonzer)
-0010100011xxxxxxxxxxxxaaaaabbbbb - bsl rA, rB     (branch if sign [negative])
-0010100100xxxxxxxxxxxxaaaaabbbbb - bnsl rA, rB   (branch not sign [not negative])
-0010100101xxxxxxxxxxxxaaaaabbbbb - bcl rA, rB     (branch if carry)
-0010100110xxxxxxxxxxxxaaaaabbbbb - bncl rA, rB   (branch if not carry)
-0010100111xxxxxxxxxxxxaaaaabbbbb - bol rA, rB     (branch if overflow)
-0010101000xxxxxxxxxxxxaaaaabbbbb - bnol rA, rB  (branch if not overflow)
-0010101001xxxxxxxxxxxxaaaaabbbbb - bpl rA, rB    (branch if positive)
-0010101010xxxxxxxxxxxxaaaaabbbbb - bnpl rA, rB  (branch if not positive)
-0010101011xxxxxxxxxxxxaaaaabbbbb - bgl rA, rB    (branch if greater [signed])
-0010101100xxxxxxxxxxxxaaaaabbbbb - bgel rA, rB  (branch if greater or equal [signed])
-0010101101xxxxxxxxxxxxaaaaabbbbb - bll rA, rB     (branch if less [signed])
-0010101110xxxxxxxxxxxxaaaaabbbbb - blel rA, rB   (branch if less or equal [signed])
-0010101111xxxxxxxxxxxxaaaaabbbbb - bal rA, rB    (branch if above [unsigned])
+0010100000xxxxxxxxxxxxaaaaabbbbb - brl rA, rB     (unconditional branch)  
+0010100001xxxxxxxxxxxxaaaaabbbbb - bzl rA, rB     (branch if zero)  
+0010100010xxxxxxxxxxxxaaaaabbbbb - bnzl rA, rB   (branch if nonzer)  
+0010100011xxxxxxxxxxxxaaaaabbbbb - bsl rA, rB     (branch if sign [negative])  
+0010100100xxxxxxxxxxxxaaaaabbbbb - bnsl rA, rB   (branch not sign [not negative])  
+0010100101xxxxxxxxxxxxaaaaabbbbb - bcl rA, rB     (branch if carry)  
+0010100110xxxxxxxxxxxxaaaaabbbbb - bncl rA, rB   (branch if not carry)  
+0010100111xxxxxxxxxxxxaaaaabbbbb - bol rA, rB     (branch if overflow)  
+0010101000xxxxxxxxxxxxaaaaabbbbb - bnol rA, rB  (branch if not overflow)  
+0010101001xxxxxxxxxxxxaaaaabbbbb - bpl rA, rB    (branch if positive)  
+0010101010xxxxxxxxxxxxaaaaabbbbb - bnpl rA, rB  (branch if not positive)  
+0010101011xxxxxxxxxxxxaaaaabbbbb - bgl rA, rB    (branch if greater [signed])  
+0010101100xxxxxxxxxxxxaaaaabbbbb - bgel rA, rB  (branch if greater or equal [signed])  
+0010101101xxxxxxxxxxxxaaaaabbbbb - bll rA, rB     (branch if less [signed])  
+0010101110xxxxxxxxxxxxaaaaabbbbb - blel rA, rB   (branch if less or equal [signed])  
+0010101111xxxxxxxxxxxxaaaaabbbbb - bal rA, rB    (branch if above [unsigned])  
 0010110000xxxxxxxxxxxxaaaaabbbbb - bael rA, rB  (branch if above or equal [unsigned])
-0010110001xxxxxxxxxxxxaaaaabbbbb - bbl rA, rB    (branch if below [unsigned])
-0010110010xxxxxxxxxxxxaaaaabbbbb - bbel rA, rB  (branch if below or equal [unsigned])
+0010110001xxxxxxxxxxxxaaaaabbbbb - bbl rA, rB    (branch if below [unsigned])  
+0010110010xxxxxxxxxxxxaaaaabbbbb - bbel rA, rB  (branch if below or equal [unsigned])  
 
 Leaves room if more branch conditions are ever needed
 
@@ -235,8 +235,8 @@ id - 00001
 ### Set mode - run, sleep, halt
 id - 00010
 
-11111xxxxxxxxxx0001000xxxxxxxxxx - mode run
-11111xxxxxxxxxx0001001xxxxxxxxxx - mode sleep (awakened by interrupt)
+11111xxxxxxxxxx0001000xxxxxxxxxx - mode run  
+11111xxxxxxxxxx0001001xxxxxxxxxx - mode sleep (awakened by interrupt)  
 11111xxxxxxxxxx0001010xxxxxxxxxx - mode halt
 
 ### Return from interrupt/return from exception
