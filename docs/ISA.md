@@ -101,8 +101,8 @@ i is 5 bit immediate
 00001aaaaabbbbb01101xxxxxxxiiiii - shrc   rA, rB, i  
 
 Arithmetic:  
-i is 12 bit immediate, sign extended to 32 bits
-00001aaaaabbbbb01110iiiiiiiiiiii  - add    rA, rB, i  
+i is 12 bit immediate, sign extended to 32 bits  
+00001aaaaabbbbb01110iiiiiiiiiiii  - add    rA, rB, i     
 00001aaaaabbbbb01111iiiiiiiiiiii -  addc  rA, rB, i  
 00001aaaaabbbbb10000iiiiiiiiiiii - sub    rA, rB, i // not really necessary  
 00001aaaaabbbbb10001iiiiiiiiiiii - subb  rA, rB, i   
@@ -191,7 +191,7 @@ If condition is met, branches to rB and stores pc + 1 in rA (set rA as r0 if you
 0010101101xxxxxxxxxxxxaaaaabbbbb - bll rA, rB     (branch if less [signed])  
 0010101110xxxxxxxxxxxxaaaaabbbbb - blel rA, rB   (branch if less or equal [signed])  
 0010101111xxxxxxxxxxxxaaaaabbbbb - bal rA, rB    (branch if above [unsigned])  
-0010110000xxxxxxxxxxxxaaaaabbbbb - bael rA, rB  (branch if above or equal [unsigned])
+0010110000xxxxxxxxxxxxaaaaabbbbb - bael rA, rB  (branch if above or equal [unsigned])  
 0010110001xxxxxxxxxxxxaaaaabbbbb - bbl rA, rB    (branch if below [unsigned])  
 0010110010xxxxxxxxxxxxaaaaabbbbb - bbel rA, rB  (branch if below or equal [unsigned])  
 
@@ -229,8 +229,8 @@ id - 00000
 ### Mov to/from control regs
 id - 00001
 
-11111aaaaabbbbb000010xxxxxxxxxxx - tocr crA, rB - move rB into control register crA
-11111aaaaabbbbb000011xxxxxxxxxxx - fmcr rA, crB - move control register crB into rA
+11111aaaaabbbbb000010xxxxxxxxxxx - tocr crA, rB - move rB into control register crA  
+11111aaaaabbbbb000011xxxxxxxxxxx - fmcr rA, crB - move control register crB into rA  
 
 ### Set mode - run, sleep, halt
 id - 00010
