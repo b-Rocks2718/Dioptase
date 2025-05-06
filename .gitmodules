@@ -1,0 +1,3 @@
+[submodule "Dioptase-Assembler"]
+	path = Dioptase-Assembler
+	url = git@github.com:b-Rocks2718/Dioptase-Assembler.git
