@@ -143,10 +143,6 @@ rA is data, rB is base, z is shift amount (0 to 3), i is 12 bit immediate, sign 
 
 Address gets added to PC before it's used
 
-y = 0 - signed offset  
-y = 1 - preincrement  
-y = 2 - postincrement
-
 00100aaaaabbbbbxxzz0iiiiiiiiiiii sw rA, [rB], i  
 00100aaaaabbbbbxxzz1iiiiiiiiiiii lw  rA, [rB], i 
 
