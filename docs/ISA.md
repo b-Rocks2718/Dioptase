@@ -124,6 +124,7 @@ Use with addi to move any 32 bit value into a register
 
 ### Memory 
 
+#### Absolute Addressing:  
 Opcode is 00011
 
 rA is data, rB is base, y is offset type, z is shift amount (0 to 3), i is 12 bit immediate, sign extended to 32 bits
@@ -132,68 +133,80 @@ y = 0 - signed offset
 y = 1 - preincrement  
 y = 2 - postincrement
 
-00011aaaaabbbbbyyzz0iiiiiiiiiiii sw rA, rB, i  
-00011aaaaabbbbbyyzz1iiiiiiiiiiii lw  rA, rB, i 
+00011aaaaabbbbbyyzz0iiiiiiiiiiii sw rA, [rB], i  
+00011aaaaabbbbbyyzz1iiiiiiiiiiii lw  rA, [rB], i 
 
-suggestions for syntax to denote offset type and shift? Steal arm’s?
+#### PC-Relative Addressing:  
+Opcode is 00100
+
+rA is data, rB is base, z is shift amount (0 to 3), i is 12 bit immediate, sign extended to 32 bits
+
+Address gets added to PC before it's used
+
+y = 0 - signed offset  
+y = 1 - preincrement  
+y = 2 - postincrement
+
+00100aaaaabbbbbxxzz0iiiiiiiiiiii sw rA, [rB], i  
+00100aaaaabbbbbxxzz1iiiiiiiiiiii lw  rA, [rB], i 
 
 ### Immediate Branches
 
-Opcode is 00100
+Opcode is 00101
 
 5 bit branch code determines which condition to use. i is 22 bit immediate, sign extended to 32 bit    
 If condition is met, branches to pc + 1 + i
 
-0010000000iiiiiiiiiiiiiiiiiiiiii - br i      (unconditional branch)  
-0010000001iiiiiiiiiiiiiiiiiiiiii - bz i     (branch if zero)  
-0010000010iiiiiiiiiiiiiiiiiiiiii - bnz i   (branch if nonzer)  
-0010000011iiiiiiiiiiiiiiiiiiiiii - bs i     (branch if sign [negative])  
-0010000100iiiiiiiiiiiiiiiiiiiiii - bns i   (branch not sign [not negative])  
-0010000101iiiiiiiiiiiiiiiiiiiiii - bc i     (branch if carry)  
-0010000110iiiiiiiiiiiiiiiiiiiiii - bnc i   (branch if not carry)  
-0010000111iiiiiiiiiiiiiiiiiiiiii - bo i     (branch if overflow)  
-0010001000iiiiiiiiiiiiiiiiiiiiii - bno i  (branch if not overflow)  
-0010001001iiiiiiiiiiiiiiiiiiiiii - bp i    (branch if positive)  
-0010001010iiiiiiiiiiiiiiiiiiiiii - bnp i  (branch if not positive)  
-0010001011iiiiiiiiiiiiiiiiiiiiii - bg i    (branch if greater [signed])  
-0010001100iiiiiiiiiiiiiiiiiiiiii - bge i  (branch if greater or equal [signed])  
-0010001101iiiiiiiiiiiiiiiiiiiiii - bl i     (branch if less [signed])  
-0010001110iiiiiiiiiiiiiiiiiiiiii - ble i   (branch if less or equal [signed])  
-0010001111iiiiiiiiiiiiiiiiiiiiii - ba i    (branch if above [unsigned])  
-0010010000iiiiiiiiiiiiiiiiiiiiii - bae i (branch if above or equal [unsigned])  
-0010010001iiiiiiiiiiiiiiiiiiiiii - bb i    (branch if below [unsigned])  
-0010010010iiiiiiiiiiiiiiiiiiiiii - bbe i (branch if below or equal [unsigned])  
+0010100000iiiiiiiiiiiiiiiiiiiiii - br i      (unconditional branch)  
+0010100001iiiiiiiiiiiiiiiiiiiiii - bz i     (branch if zero)  
+0010100010iiiiiiiiiiiiiiiiiiiiii - bnz i   (branch if nonzer)  
+0010100011iiiiiiiiiiiiiiiiiiiiii - bs i     (branch if sign [negative])  
+0010100100iiiiiiiiiiiiiiiiiiiiii - bns i   (branch not sign [not negative])  
+0010100101iiiiiiiiiiiiiiiiiiiiii - bc i     (branch if carry)  
+0010100110iiiiiiiiiiiiiiiiiiiiii - bnc i   (branch if not carry)  
+0010100111iiiiiiiiiiiiiiiiiiiiii - bo i     (branch if overflow)  
+0010101000iiiiiiiiiiiiiiiiiiiiii - bno i  (branch if not overflow)  
+0010101001iiiiiiiiiiiiiiiiiiiiii - bp i    (branch if positive)  
+0010101010iiiiiiiiiiiiiiiiiiiiii - bnp i  (branch if not positive)  
+0010101011iiiiiiiiiiiiiiiiiiiiii - bg i    (branch if greater [signed])  
+0010101100iiiiiiiiiiiiiiiiiiiiii - bge i  (branch if greater or equal [signed])  
+0010101101iiiiiiiiiiiiiiiiiiiiii - bl i     (branch if less [signed])  
+0010101110iiiiiiiiiiiiiiiiiiiiii - ble i   (branch if less or equal [signed])  
+0010101111iiiiiiiiiiiiiiiiiiiiii - ba i    (branch if above [unsigned])  
+0010110000iiiiiiiiiiiiiiiiiiiiii - bae i (branch if above or equal [unsigned])  
+0010110001iiiiiiiiiiiiiiiiiiiiii - bb i    (branch if below [unsigned])  
+0010110010iiiiiiiiiiiiiiiiiiiiii - bbe i (branch if below or equal [unsigned])  
 
 Leaves room if more branch conditions are ever needed
 
 ### Register Branches
 
-Opcode is 00101
+Opcode is 00110
 
 Branch and link register
 
 5 bit branch code determines which condition to use.
 If condition is met, branches to rB and stores pc + 1 in rA (set rA as r0 if you don’t want to save it)
 
-0010100000xxxxxxxxxxxxaaaaabbbbb - brl rA, rB     (unconditional branch)  
-0010100001xxxxxxxxxxxxaaaaabbbbb - bzl rA, rB     (branch if zero)  
-0010100010xxxxxxxxxxxxaaaaabbbbb - bnzl rA, rB   (branch if nonzer)  
-0010100011xxxxxxxxxxxxaaaaabbbbb - bsl rA, rB     (branch if sign [negative])  
-0010100100xxxxxxxxxxxxaaaaabbbbb - bnsl rA, rB   (branch not sign [not negative])  
-0010100101xxxxxxxxxxxxaaaaabbbbb - bcl rA, rB     (branch if carry)  
-0010100110xxxxxxxxxxxxaaaaabbbbb - bncl rA, rB   (branch if not carry)  
-0010100111xxxxxxxxxxxxaaaaabbbbb - bol rA, rB     (branch if overflow)  
-0010101000xxxxxxxxxxxxaaaaabbbbb - bnol rA, rB  (branch if not overflow)  
-0010101001xxxxxxxxxxxxaaaaabbbbb - bpl rA, rB    (branch if positive)  
-0010101010xxxxxxxxxxxxaaaaabbbbb - bnpl rA, rB  (branch if not positive)  
-0010101011xxxxxxxxxxxxaaaaabbbbb - bgl rA, rB    (branch if greater [signed])  
-0010101100xxxxxxxxxxxxaaaaabbbbb - bgel rA, rB  (branch if greater or equal [signed])  
-0010101101xxxxxxxxxxxxaaaaabbbbb - bll rA, rB     (branch if less [signed])  
-0010101110xxxxxxxxxxxxaaaaabbbbb - blel rA, rB   (branch if less or equal [signed])  
-0010101111xxxxxxxxxxxxaaaaabbbbb - bal rA, rB    (branch if above [unsigned])  
-0010110000xxxxxxxxxxxxaaaaabbbbb - bael rA, rB  (branch if above or equal [unsigned])  
-0010110001xxxxxxxxxxxxaaaaabbbbb - bbl rA, rB    (branch if below [unsigned])  
-0010110010xxxxxxxxxxxxaaaaabbbbb - bbel rA, rB  (branch if below or equal [unsigned])  
+0011000000xxxxxxxxxxxxaaaaabbbbb - brl rA, rB     (unconditional branch)  
+0011000001xxxxxxxxxxxxaaaaabbbbb - bzl rA, rB     (branch if zero)  
+0011000010xxxxxxxxxxxxaaaaabbbbb - bnzl rA, rB   (branch if nonzer)  
+0011000011xxxxxxxxxxxxaaaaabbbbb - bsl rA, rB     (branch if sign [negative])  
+0011000100xxxxxxxxxxxxaaaaabbbbb - bnsl rA, rB   (branch not sign [not negative])  
+0011000101xxxxxxxxxxxxaaaaabbbbb - bcl rA, rB     (branch if carry)  
+0011000110xxxxxxxxxxxxaaaaabbbbb - bncl rA, rB   (branch if not carry)  
+0011000111xxxxxxxxxxxxaaaaabbbbb - bol rA, rB     (branch if overflow)  
+0011001000xxxxxxxxxxxxaaaaabbbbb - bnol rA, rB  (branch if not overflow)  
+0011001001xxxxxxxxxxxxaaaaabbbbb - bpl rA, rB    (branch if positive)  
+0011001010xxxxxxxxxxxxaaaaabbbbb - bnpl rA, rB  (branch if not positive)  
+0011001011xxxxxxxxxxxxaaaaabbbbb - bgl rA, rB    (branch if greater [signed])  
+0011001100xxxxxxxxxxxxaaaaabbbbb - bgel rA, rB  (branch if greater or equal [signed])  
+0011001101xxxxxxxxxxxxaaaaabbbbb - bll rA, rB     (branch if less [signed])  
+0011001110xxxxxxxxxxxxaaaaabbbbb - blel rA, rB   (branch if less or equal [signed])  
+0011001111xxxxxxxxxxxxaaaaabbbbb - bal rA, rB    (branch if above [unsigned])  
+0011010000xxxxxxxxxxxxaaaaabbbbb - bael rA, rB  (branch if above or equal [unsigned])  
+0011010001xxxxxxxxxxxxaaaaabbbbb - bbl rA, rB    (branch if below [unsigned])  
+0011010010xxxxxxxxxxxxaaaaabbbbb - bbel rA, rB  (branch if below or equal [unsigned])  
 
 Leaves room if more branch conditions are ever needed
 
