@@ -52,8 +52,8 @@ shifts:
 00000aaaaabbbbbxxxxxxx01001ccccc - asr    rA, rB, rC (arithmetic shift right)  
 00000aaaaabbbbbxxxxxxx01010ccccc - rotl    rA, rB, rC (rotate left)  
 00000aaaaabbbbbxxxxxxx01011ccccc - rotr    rA, rB, rC (rotate right)  
-00000aaaaabbbbbxxxxxxx01100ccccc - shlc   rA, rB, rC (shift left through carry)  
-00000aaaaabbbbbxxxxxxx01101ccccc - shrc   rA, rB, rC (shift right through carry)  
+00000aaaaabbbbbxxxxxxx01100ccccc - lslc   rA, rB, rC (shift left through carry)  
+00000aaaaabbbbbxxxxxxx01101ccccc - lsrc   rA, rB, rC (shift right through carry)  
 
 arithmetic:  
 00000aaaaabbbbbxxxxxxx01110ccccc - add   rA, rB, rC  
@@ -62,7 +62,7 @@ arithmetic:
 00000aaaaabbbbbxxxxxxx10001ccccc - subb  rA, rB, rC (subtract with borrow)  
 00000aaaaabbbbbxxxxxxx10010ccccc - mul   rA, rB, rC
 
-Plenty of instruction space to expand this over time
+Plenty of instruction space to expand this over time - floating point stuff will likely be next  
 
 ### ALU immediate instructions
 
@@ -81,13 +81,13 @@ i is decoded as (i << (8 * y))
 So i = 0x0F and y = 0 decodes as  0x0000000F  
 But i = 0x0F and y = 2 decodes as 0x000F0000
 
-00001aaaaabbbbb00000yyxxiiiiiiii - and  rA, rB, i   
-00001aaaaabbbbb00001yyxxiiiiiiii - nand rA, rB, i   
-00001aaaaabbbbb00010yyxxiiiiiiii - or      rA, rB, i   
-00001aaaaabbbbb00011yyxxiiiiiiii - nor    rA, rB, i   
-00001aaaaabbbbb00100yyxxiiiiiiii - xor    rA, rB, i  
-00001aaaaabbbbb00101yyxxiiiiiiii - xnor  rA, rB, i  
-00001aaaaaxxxxx00110yyxxiiiiiiii -  not    rA, i  
+00001aaaaabbbbb00000xxyyiiiiiiii - and  rA, rB, i   
+00001aaaaabbbbb00001xxyyiiiiiiii - nand rA, rB, i   
+00001aaaaabbbbb00010xxyyiiiiiiii - or      rA, rB, i   
+00001aaaaabbbbb00011xxyyiiiiiiii - nor    rA, rB, i   
+00001aaaaabbbbb00100xxyyiiiiiiii - xor    rA, rB, i  
+00001aaaaabbbbb00101xxyyiiiiiiii - xnor  rA, rB, i  
+00001aaaaaxxxxx00110xxyyiiiiiiii -  not    rA, i  
 
 Shifts:  
 i is 5 bit immediate
@@ -97,8 +97,8 @@ i is 5 bit immediate
 00001aaaaabbbbb01001xxxxxxxiiiii - asr    rA, rB, i  
 00001aaaaabbbbb01010xxxxxxxiiiii - rotl    rA, rB, i  
 00001aaaaabbbbb01011xxxxxxxiiiii - rotr    rA, rB, i  
-00001aaaaabbbbb01100xxxxxxxiiiii - shlc   rA, rB, i  
-00001aaaaabbbbb01101xxxxxxxiiiii - shrc   rA, rB, i  
+00001aaaaabbbbb01100xxxxxxxiiiii - lslc   rA, rB, i  
+00001aaaaabbbbb01101xxxxxxxiiiii - lsrc   rA, rB, i  
 
 Arithmetic:  
 i is 12 bit immediate, sign extended to 32 bits  
@@ -133,8 +133,8 @@ y = 0 - signed offset
 y = 1 - preincrement  
 y = 2 - postincrement
 
-00011aaaaabbbbbyyzz0iiiiiiiiiiii sw rA, [rB], i  
-00011aaaaabbbbbyyzz1iiiiiiiiiiii lw  rA, [rB], i 
+00011aaaaabbbbb0yyzziiiiiiiiiiii sw rA, [rB], i  
+00011aaaaabbbbb1yyzziiiiiiiiiiii lw  rA, [rB], i 
 
 #### PC-Relative Addressing:  
 Opcode is 00100
@@ -143,15 +143,15 @@ rA is data, rB is base, z is shift amount (0 to 3), i is 12 bit immediate, sign 
 
 Address gets added to PC before it's used
 
-00100aaaaabbbbbxxzz0iiiiiiiiiiii sw rA, [rB], i  
-00100aaaaabbbbbxxzz1iiiiiiiiiiii lw  rA, [rB], i 
+00100aaaaabbbbb0xxzziiiiiiiiiiii swr rA, [rB], i  
+00100aaaaabbbbb1xxzziiiiiiiiiiii lwr  rA, [rB], i 
 
 ### Immediate Branches
 
 Opcode is 00101
 
 5 bit branch code determines which condition to use. i is 22 bit immediate, sign extended to 32 bit    
-If condition is met, branches to pc + 1 + i
+If condition is met, branches to pc + 4 + i
 
 0010100000iiiiiiiiiiiiiiiiiiiiii - br i      (unconditional branch)  
 0010100001iiiiiiiiiiiiiiiiiiiiii - bz i     (branch if zero)  
@@ -175,59 +175,88 @@ If condition is met, branches to pc + 1 + i
 
 Leaves room if more branch conditions are ever needed
 
-### Register Branches
+### Absolute Register Branches
 
 Opcode is 00110
 
 Branch and link register
 
 5 bit branch code determines which condition to use.
-If condition is met, branches to rB and stores pc + 1 in rA (set rA as r0 if you don’t want to save it)
+If condition is met, branches to rB and stores pc + 4 in rA (set rA as r0 if you don’t want to save it)
 
-0011000000xxxxxxxxxxxxaaaaabbbbb - brl rA, rB     (unconditional branch)  
-0011000001xxxxxxxxxxxxaaaaabbbbb - bzl rA, rB     (branch if zero)  
-0011000010xxxxxxxxxxxxaaaaabbbbb - bnzl rA, rB   (branch if nonzer)  
-0011000011xxxxxxxxxxxxaaaaabbbbb - bsl rA, rB     (branch if sign [negative])  
-0011000100xxxxxxxxxxxxaaaaabbbbb - bnsl rA, rB   (branch not sign [not negative])  
-0011000101xxxxxxxxxxxxaaaaabbbbb - bcl rA, rB     (branch if carry)  
-0011000110xxxxxxxxxxxxaaaaabbbbb - bncl rA, rB   (branch if not carry)  
-0011000111xxxxxxxxxxxxaaaaabbbbb - bol rA, rB     (branch if overflow)  
-0011001000xxxxxxxxxxxxaaaaabbbbb - bnol rA, rB  (branch if not overflow)  
-0011001001xxxxxxxxxxxxaaaaabbbbb - bpl rA, rB    (branch if positive)  
-0011001010xxxxxxxxxxxxaaaaabbbbb - bnpl rA, rB  (branch if not positive)  
-0011001011xxxxxxxxxxxxaaaaabbbbb - bgl rA, rB    (branch if greater [signed])  
-0011001100xxxxxxxxxxxxaaaaabbbbb - bgel rA, rB  (branch if greater or equal [signed])  
-0011001101xxxxxxxxxxxxaaaaabbbbb - bll rA, rB     (branch if less [signed])  
-0011001110xxxxxxxxxxxxaaaaabbbbb - blel rA, rB   (branch if less or equal [signed])  
-0011001111xxxxxxxxxxxxaaaaabbbbb - bal rA, rB    (branch if above [unsigned])  
-0011010000xxxxxxxxxxxxaaaaabbbbb - bael rA, rB  (branch if above or equal [unsigned])  
-0011010001xxxxxxxxxxxxaaaaabbbbb - bbl rA, rB    (branch if below [unsigned])  
-0011010010xxxxxxxxxxxxaaaaabbbbb - bbel rA, rB  (branch if below or equal [unsigned])  
+0011000000xxxxxxxxxxxxaaaaabbbbb - bra rA, rB     (unconditional branch)  
+0011000001xxxxxxxxxxxxaaaaabbbbb - bza rA, rB     (branch if zero)  
+0011000010xxxxxxxxxxxxaaaaabbbbb - bnza rA, rB   (branch if nonzero)  
+0011000011xxxxxxxxxxxxaaaaabbbbb - bsa rA, rB     (branch if sign [negative])  
+0011000100xxxxxxxxxxxxaaaaabbbbb - bnsa rA, rB   (branch not sign [not negative])  
+0011000101xxxxxxxxxxxxaaaaabbbbb - bca rA, rB     (branch if carry)  
+0011000110xxxxxxxxxxxxaaaaabbbbb - bnca rA, rB   (branch if not carry)  
+0011000111xxxxxxxxxxxxaaaaabbbbb - boa rA, rB     (branch if overflow)  
+0011001000xxxxxxxxxxxxaaaaabbbbb - bnoa rA, rB  (branch if not overflow)  
+0011001001xxxxxxxxxxxxaaaaabbbbb - bpa rA, rB    (branch if positive)  
+0011001010xxxxxxxxxxxxaaaaabbbbb - bnpa rA, rB  (branch if not positive)  
+0011001011xxxxxxxxxxxxaaaaabbbbb - bga rA, rB    (branch if greater [signed])  
+0011001100xxxxxxxxxxxxaaaaabbbbb - bgea rA, rB  (branch if greater or equal [signed])  
+0011001101xxxxxxxxxxxxaaaaabbbbb - bla rA, rB     (branch if less [signed])  
+0011001110xxxxxxxxxxxxaaaaabbbbb - blea rA, rB   (branch if less or equal [signed])  
+0011001111xxxxxxxxxxxxaaaaabbbbb - baa rA, rB    (branch if above [unsigned])  
+0011010000xxxxxxxxxxxxaaaaabbbbb - baea rA, rB  (branch if above or equal [unsigned])  
+0011010001xxxxxxxxxxxxaaaaabbbbb - bba rA, rB    (branch if below [unsigned])  
+0011010010xxxxxxxxxxxxaaaaabbbbb - bbea rA, rB  (branch if below or equal [unsigned])  
 
 Leaves room if more branch conditions are ever needed
 
-### Syscalls
+### Relative Register Branches
 
 Opcode is 00111
+
+Branch and link register
+
+5 bit branch code determines which condition to use.
+If condition is met, branches to rB + pc + 4 and stores pc + 4 in rA (set rA as r0 if you don’t want to save it)
+
+0011100000xxxxxxxxxxxxaaaaabbbbb - br rA, rB     (unconditional branch)  
+0011100001xxxxxxxxxxxxaaaaabbbbb - bz rA, rB     (branch if zero)  
+0011100010xxxxxxxxxxxxaaaaabbbbb - bnz rA, rB   (branch if nonzero)  
+0011100011xxxxxxxxxxxxaaaaabbbbb - bs rA, rB     (branch if sign [negative])  
+0011100100xxxxxxxxxxxxaaaaabbbbb - bns rA, rB   (branch not sign [not negative])  
+0011100101xxxxxxxxxxxxaaaaabbbbb - bc rA, rB     (branch if carry)  
+0011100110xxxxxxxxxxxxaaaaabbbbb - bnc rA, rB   (branch if not carry)  
+0011100111xxxxxxxxxxxxaaaaabbbbb - bo rA, rB     (branch if overflow)  
+0011101000xxxxxxxxxxxxaaaaabbbbb - bno rA, rB  (branch if not overflow)  
+0011101001xxxxxxxxxxxxaaaaabbbbb - bp rA, rB    (branch if positive)  
+0011101010xxxxxxxxxxxxaaaaabbbbb - bnp rA, rB  (branch if not positive)  
+0011101011xxxxxxxxxxxxaaaaabbbbb - bg rA, rB    (branch if greater [signed])  
+0011101100xxxxxxxxxxxxaaaaabbbbb - bge rA, rB  (branch if greater or equal [signed])  
+0011101101xxxxxxxxxxxxaaaaabbbbb - bl rA, rB     (branch if less [signed])  
+0011101110xxxxxxxxxxxxaaaaabbbbb - ble rA, rB   (branch if less or equal [signed])  
+0011101111xxxxxxxxxxxxaaaaabbbbb - ba rA, rB    (branch if above [unsigned])  
+0011110000xxxxxxxxxxxxaaaaabbbbb - bae rA, rB  (branch if above or equal [unsigned])  
+0011110001xxxxxxxxxxxxaaaaabbbbb - bb rA, rB    (branch if below [unsigned])  
+0011110010xxxxxxxxxxxxaaaaabbbbb - bbe rA, rB  (branch if below or equal [unsigned]) 
+
+### Syscalls
+
+Opcode is 01000
 
 List will expand as we go
 
 i is 7 bit immediate specifying which exception to raise
 
-00111xxxxxxxxxxxxxxxxxxxxiiiiiii
+01000xxxxxxxxxxxxxxxxxxxxiiiiiii
 
 For now, we’ll start with supporting
 
-00111xxxxxxxxxxxxxxxxxxxx0000000 - sys EXIT, returning control from the user code to the OS
+01000xxxxxxxxxxxxxxxxxxxx0000000 - sys EXIT, returning control from the user code to the OS
 
 
 ## Privileged Instructions:
 
 Opcode - 11111
-All share opcode, distinguished by 5 bit id following rB
+All share opcode, distinguished by 5 bit ID following rB
 
 ### Tlb reads/writes/clear   
-id - 00000
+ID - 00000
 
 11111aaaaabbbbb0000000xxxxxxxxxx - tlbr rA, rB - if rB exists in tlb, put its map in rA, otherwise put 0 in rA (tlb shouldn’t ever map stuff to the very bottom of the address space)
 
@@ -236,25 +265,23 @@ id - 00000
 11111xxxxxxxxxx000001xxxxxxxxxxx - tlbc - clear tlb
 
 ### Mov to/from control regs
-id - 00001
+ID - 00001
 
-11111aaaaabbbbb000010xxxxxxxxxxx - tocr crA, rB - move rB into control register crA  
-11111aaaaabbbbb000011xxxxxxxxxxx - fmcr rA, crB - move control register crB into rA  
+11111aaaaabbbbb0000100xxxxxxxxxx - mov crA, rB - move rB into control register crA  
+11111aaaaabbbbb0000101xxxxxxxxxx - mov rA, crB - move control register crB into rA  
+11111aaaaabbbbb0000110xxxxxxxxxx - mov crA, crB - move control register crB into control register crA  
 
 ### Set mode - run, sleep, halt
-id - 00010
+ID - 00010
 
 11111xxxxxxxxxx0001000xxxxxxxxxx - mode run  
 11111xxxxxxxxxx0001001xxxxxxxxxx - mode sleep (awakened by interrupt)  
 11111xxxxxxxxxx0001010xxxxxxxxxx - mode halt
 
-### Return from interrupt/return from exception
-id - 00011
+### Return from exception
+ID - 00011
 
 11111aaaaaxxxxx000110xxxxxxxxxxx   rfe rA - (return from exception) update kmode and jump to rA + 1
-
-11111aaaaaxxxxx000111xxxxxxxxxxx   rfi rA - (return from interrupt) update kmode and jump to rA
-
 
 Leaves lots of unused opcodes, so the ISA can be expanded over time
 
@@ -268,6 +295,6 @@ Invalid instruction exception
 Privileges exception  
 Tlb umiss exception  
 Tlb kmiss exception  
-Misaligned pc exception
+Misaligned pc exception  
 
 
