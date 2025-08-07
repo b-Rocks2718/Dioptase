@@ -10,7 +10,7 @@ Reads from `r0` always return 0, writes to `r0` are ignored. `r1` will be prefer
 
 Kernel mode will allow privileged instructions, user mode will raise an exception on privileged instructions. 
 
-Memory is byte addressable, misaligned pc will raise an exception, I think misaligned loads/stores should be allowed
+Memory is byte addressable, misaligned pc will raise an exception, misaligned loads/stores are allowed
 
 ### Control Registers:   
 `cr0` = PSR (processor status register, shift register holding kmode history of the processor)  
