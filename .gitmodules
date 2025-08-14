@@ -4,3 +4,6 @@
 [submodule "Dioptase-Emulators/Dioptase-Emulator-Simple"]
 	path = Dioptase-Emulators/Dioptase-Emulator-Simple
 	url = git@github.com:b-Rocks2718/Dioptase-Emulator-Simple.git
+[submodule "Dioptase-CPUs/Dioptase-Pipe-Simple"]
+	path = Dioptase-CPUs/Dioptase-Pipe-Simple
+	url = git@github.com:b-Rocks2718/Dioptase-Pipe-Simple.git
