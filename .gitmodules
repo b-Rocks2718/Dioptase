@@ -7,3 +7,9 @@
 [submodule "Dioptase-CPUs/Dioptase-Pipe-Simple"]
 	path = Dioptase-CPUs/Dioptase-Pipe-Simple
 	url = git@github.com:b-Rocks2718/Dioptase-Pipe-Simple.git
+[submodule "Dioptase-Languages/Dioptase-C-Compiler"]
+	path = Dioptase-Languages/Dioptase-C-Compiler
+	url = git@github.com:b-Rocks2718/Dioptase-C-Compiler.git
+[submodule "Dioptase-Emulators/Dioptase-Emulator-Full"]
+	path = Dioptase-Emulators/Dioptase-Emulator-Full
+	url = git@github.com:b-Rocks2718/Dioptase-Emulator-Full.git
