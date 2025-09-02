@@ -26,7 +26,7 @@ On interrupt/exception/syscall, top bit of IMR is set to disable further interru
 
 OS page size: 4KB  
 Basys 3 has about 192K of memory, so this means we need to map 32 bit addresses to 18 bit addresses.  
-The TLB will do this by looking at the top 20 bits of a 32 bit address and the 16 bit process ID and returning a 6 bit number.   
+The TLB will do this by looking at the top 20 bits of a 32 bit address and the 12 bit process ID and returning a 6 bit number.   
 The bottom 12 bits of the address pass through the TLB, creating an 18 bit address.  
 When in user mode, all addresses are mapped by the TLB.
 When in kernel mode, the bottom 192K of address space does not go through the TLB.
@@ -312,7 +312,7 @@ ID - 00010
 ### Return from exception
 ID - 00011
 
-11111aaaaaxxxxx000110xxxxxxxxxxx   rfe rA - (return from exception) update kmode and jump to rA + 1
+11111xxxxxxxxxx000110xxxxxxxxxxx   rfe - (return from exception) update kmode, restore flags from efg, and jump to epc
 
 Leaves lots of unused opcodes, so the ISA can be expanded over time
 
@@ -322,10 +322,10 @@ All exceptions, interrupts, and syscalls cause the processor to enter kernel mod
 
 ### Exception types:
 
-Invalid instruction exception  
-Privileges exception  
-Tlb umiss exception  
-Tlb kmiss exception  
-Misaligned pc exception  
+Invalid instruction exception  := 0x80  
+Privileges exception  := 0x81  
+Tlb umiss exception  := 0x82  
+Tlb kmiss exception  := 0x83  
+Misaligned pc exception  := 0x84  
 
 
