@@ -20,12 +20,13 @@ Memory is byte addressable, misaligned pc will raise an exception, misaligned lo
 `cr4` = EPC (exceptional PC, pc is placed here after interrupt, syscall, or exception)  
 `cr5` = EFG (exceptional flags, flags are placed here after interrupt, syscall, or exception)  
 `cr6` = CDV (clock divider register, sets clock rate)
+`cr7` = TLB (address is placed here when it causes a TLB miss)
 
 On interrupt/exception/syscall, top bit of IMR is set to disable further interrupts. The kernel must clear it after saving pc and flags to enable nested interrupts
 
 OS page size: 4KB  
 Basys 3 has about 192K of memory, so this means we need to map 32 bit addresses to 18 bit addresses.  
-The TLB will do this by looking at the top 20 bits of a 32 bit address and returning a 6 bit number.   
+The TLB will do this by looking at the top 20 bits of a 32 bit address and the 16 bit process ID and returning a 6 bit number.   
 The bottom 12 bits of the address pass through the TLB, creating an 18 bit address.  
 When in user mode, all addresses are mapped by the TLB.
 When in kernel mode, the bottom 192K of address space does not go through the TLB.
@@ -271,13 +272,13 @@ Opcode is 01111
 
 List will expand as we go
 
-i is 7 bit immediate specifying which exception to raise
+i is 8 bit immediate specifying which exception to raise
 
-01111xxxxxxxxxxxxxxxxxxxxiiiiiii
+01111xxxxxxxxxxxxxxxxxxxiiiiiiii
 
 For now, we’ll start with supporting
 
-01111xxxxxxxxxxxxxxxxxxxx0000000 - sys EXIT, returning control from the user code to the OS
+01111xxxxxxxxxxxxxxxxxxx00000000 - sys EXIT, returning control from the user code to the OS
 
 
 ## Privileged Instructions:

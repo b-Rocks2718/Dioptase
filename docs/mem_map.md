@@ -1,9 +1,21 @@
 # Memory Map (physical addresses)
 
 ## 0x00000 - 0x1FFFF
+
+### 0x00000 - 0x000FF
+Interrupt Vector Table
+
+### 0x00100 - 0x0FFFF
+
 Code, heap, stack  
-Code will start at 0x0000, stack at 0x1FFFF  
+Code will start at 0x00100, stack at 0x0FFFF  
 Heap is everything in between
+Kernel will probably use this memory for itself
+
+PC will be initialized to 0x00100 on startup
+
+### 0x10000 - 0x1FFFF
+Kernel will probably give this space to user processes
 
 ## 0x20000 - 0x25FFF
 General I/O (will include SD card at some point).
@@ -21,7 +33,7 @@ If there's an overlap, the higher sprite will appear on top (sprite 7 over sprit
 ## 0x2A000 - 0x2DFFF
 Tilemap. Each tile is 8x8 pixels, 1 pixel takes 2 bytes (12 bits), and we reserve space for 128
 
-## 0x2E000 - 0x2F2C0
+## 0x2E000 - 0x2FFFF
 Framebuffer. The plan is to use 640x480 resolution, so we need 4800 tiles = 0x12C0 bytes.
 
 ## 0x2FFD0 - 0x2FFEF

@@ -5,7 +5,7 @@ Top level repo for the Dioptase project.
 
 The goal is to build an FPGA computer from scratch - creating an ISA, verilog processor, assembler, compiler, and OS.
 
-[ISA](https://github.com/b-Rocks2718/Dioptase/blob/main/docs/ISA.md)
+[ISA](https://github.com/b-Rocks2718/Dioptase/blob/main/docs/ISA.md)  
 [Memory Map](https://github.com/b-Rocks2718/Dioptase/blob/main/docs/mem_map.md)
 
 I/O devices:
