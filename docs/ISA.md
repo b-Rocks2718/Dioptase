@@ -24,11 +24,11 @@ Memory is byte addressable, misaligned pc will raise an exception, misaligned lo
 On interrupt/exception/syscall, top bit of IMR is set to disable further interrupts. The kernel must clear it after saving pc and flags to enable nested interrupts
 
 OS page size: 4KB  
-Basys 3 has about 64K of memory, so this means we need to map 32 bit addresses to 16 bit addresses.  
-The TLB will do this by looking at the top 20 bits of a 32 bit address and returning a 4 bit number.   
-The bottom 12 bits of the address pass through the TLB, creating a 16 bit address.  
+Basys 3 has about 192K of memory, so this means we need to map 32 bit addresses to 18 bit addresses.  
+The TLB will do this by looking at the top 20 bits of a 32 bit address and returning a 6 bit number.   
+The bottom 12 bits of the address pass through the TLB, creating an 18 bit address.  
 When in user mode, all addresses are mapped by the TLB.
-When in kernel mode, the bottom 32K of address space does not go through the tlb
+When in kernel mode, the bottom 192K of address space does not go through the TLB.
 
 ## User Instructions:
 
