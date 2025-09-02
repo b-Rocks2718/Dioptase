@@ -2,17 +2,17 @@
 
 ## 0x00000 - 0x1FFFF
 
-### 0x00000 - 0x000FF
+### 0x00000 - 0x003FF
 Interrupt Vector Table
 
-### 0x00100 - 0x0FFFF
+### 0x00400 - 0x0FFFF
 
 Code, heap, stack  
-Code will start at 0x00100, stack at 0x0FFFF  
+Code will start at 0x00400, stack at 0x0FFFF  
 Heap is everything in between
 Kernel will probably use this memory for itself
 
-PC will be initialized to 0x00100 on startup
+PC will be initialized to 0x00400 on startup
 
 ### 0x10000 - 0x1FFFF
 Kernel will probably give this space to user processes
