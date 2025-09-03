@@ -312,7 +312,7 @@ ID - 00010
 ### Return from exception
 ID - 00011
 
-11111xxxxxxxxxx000110xxxxxxxxxxx   rfe - (return from exception) update kmode, restore flags from efg, and jump to epc
+11111aaaaabbbbb000110xxxxxxxxxxx   rfe rA, rB - (return from exception) update kmode, restore flags from rA, and jump to rB
 
 Leaves lots of unused opcodes, so the ISA can be expanded over time
 
