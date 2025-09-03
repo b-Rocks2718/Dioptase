@@ -19,7 +19,7 @@ Memory is byte addressable, misaligned pc will raise an exception, misaligned lo
 `cr3` = IMR (interrupt mask register, enables various interrupts. Top bit enables/disables all interrupts)   
 `cr4` = EPC (exceptional PC, pc is placed here after interrupt, syscall, or exception)  
 `cr5` = EFG (exceptional flags, flags are placed here after interrupt, syscall, or exception)  
-`cr6` = CDV (clock divider register, sets clock rate)
+`cr6` = CDV (clock divider register, sets clock rate)  
 `cr7` = TLB (address is placed here when it causes a TLB miss)
 
 On interrupt/exception/syscall, top bit of IMR is set to disable further interrupts. The kernel must clear it after saving pc and flags to enable nested interrupts
