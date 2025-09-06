@@ -12,6 +12,7 @@ I/O devices:
  - PS/2 Keyboard
  - VGA Monitor
  - SD card storage
+ - UART
 
 Clone the repo with `git clone --recurse-submodules`  
 Pull the updates with `git pull --recurse-submodules`

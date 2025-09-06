@@ -23,6 +23,9 @@ General I/O (will include SD card at some point).
 ### 0x20000 - 0x20001
 Input stream from PS/2 keyboard (0 if nothing, otherwise ASCII)
 
+### 0x20002
+UART TX
+
 ### 0x20004 - 0x20008
 SD card (IDK exactly what the interface will be yet)
 

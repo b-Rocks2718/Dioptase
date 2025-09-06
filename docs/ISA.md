@@ -309,10 +309,11 @@ ID - 00010
 11111xxxxxxxxxx0001001xxxxxxxxxx - mode sleep (awakened by interrupt)  
 11111xxxxxxxxxx0001010xxxxxxxxxx - mode halt
 
-### Return from exception
+### Return from exception/interrupt
 ID - 00011
 
-11111aaaaabbbbb000110xxxxxxxxxxx   rfe rA, rB - (return from exception) update kmode, restore flags from rA, and jump to rB
+11111aaaaabbbbb000110xxxxxxxxxxx   rfe rA, rB - (return from exception) update kmode, restore flags from rA, and jump to rB  
+11111aaaaabbbbb000111xxxxxxxxxxx   rfi rA, rB - (return from exception) update kmode, restore flags from rA, and jump to rB, and reenable interrupts
 
 Leaves lots of unused opcodes, so the ISA can be expanded over time
 
