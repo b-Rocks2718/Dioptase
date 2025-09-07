@@ -26,7 +26,10 @@ Input stream from PS/2 keyboard (0 if nothing, otherwise ASCII)
 ### 0x20002
 UART TX
 
-### 0x20004 - 0x20008
+### 0x20004 - 0x20007
+PIT
+
+### 0x20008 - 0x20010
 SD card (IDK exactly what the interface will be yet)
 
 ## 0x26000 - 0x29FFF

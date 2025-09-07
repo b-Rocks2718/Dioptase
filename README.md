@@ -13,6 +13,7 @@ I/O devices:
  - VGA Monitor
  - SD card storage
  - UART
+ - PIT (Programmable Interrupt Timer)
 
 Clone the repo with `git clone --recurse-submodules`  
 Pull the updates with `git pull --recurse-submodules`
