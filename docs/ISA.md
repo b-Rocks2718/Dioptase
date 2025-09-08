@@ -323,10 +323,15 @@ All exceptions, interrupts, and syscalls cause the processor to enter kernel mod
 
 ### Exception types:
 
+#### Index into interrupt vector table
+
+sys EXIT := 0x00  
 Invalid instruction exception  := 0x80  
 Privileges exception  := 0x81  
 Tlb umiss exception  := 0x82  
 Tlb kmiss exception  := 0x83  
 Misaligned pc exception  := 0x84  
+Timer interrupt := 0xF0  
+Keyboard interrupt := 0xF1
 
 
