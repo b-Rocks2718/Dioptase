@@ -28,10 +28,10 @@ Pull the updates with `git pull --recurse-submodules`
 - [Assembler](https://github.com/b-Rocks2718/Dioptase-Assembler) (Done)
 - Emulators:
   - [User ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Simple) (Done)
-  - [Full ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Full) (In Progress)
+  - [Full ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Full) (Basically done)
 - Processors:
   - [User ISA Pipeline](https://github.com/b-Rocks2718/Dioptase-Pipe-Simple) (Done)
-  - Full ISA Pipeline (Not yet started)
+  - [Full ISA Pipeline](https://github.com/b-Rocks2718/Dioptase-Pipe-Full) (In progress)
 - Languages:
   - [C Compiler](https://github.com/b-Rocks2718/Dioptase-C-Compiler) (In progress)
   - Lox Interpreter (Not yet started)
