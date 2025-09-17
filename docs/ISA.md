@@ -325,7 +325,7 @@ All exceptions, interrupts, and syscalls cause the processor to enter kernel mod
 
 #### Index into interrupt vector table
 
-sys EXIT := 0x00  
+sys EXIT := 0x01  
 Invalid instruction exception  := 0x80  
 Privileges exception  := 0x81  
 Tlb umiss exception  := 0x82  
