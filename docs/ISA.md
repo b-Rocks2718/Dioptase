@@ -13,7 +13,7 @@ Kernel mode will allow privileged instructions, user mode will raise an exceptio
 Memory is byte addressable, misaligned pc will raise an exception, misaligned loads/stores are allowed
 
 ### Control Registers:   
-`cr0` = PSR (processor status register, shift register holding kmode history of the processor)  
+`cr0` = PSR (processor status register, counter holding kmode history of the processor)  
 `cr1` = PID (holds PID of currently executing process)  
 `cr2` = ISR (interrupt status register, holds which interrupts are active)  
 `cr3` = IMR (interrupt mask register, enables various interrupts. Top bit enables/disables all interrupts)   
