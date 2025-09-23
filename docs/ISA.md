@@ -14,7 +14,7 @@ Memory is byte addressable, misaligned pc will raise an exception, misaligned lo
 
 ### Control Registers:   
 `cr0` = PSR (processor status register, counter holding kmode history of the processor)  
-`cr1` = PID (holds PID of currently executing process)  
+`cr1` = PID (holds 12 bit PID of currently executing process)  
 `cr2` = ISR (interrupt status register, holds which interrupts are active)  
 `cr3` = IMR (interrupt mask register, enables various interrupts. Top bit enables/disables all interrupts)   
 `cr4` = EPC (exceptional PC, pc is placed here after interrupt, syscall, or exception)  
