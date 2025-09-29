@@ -1,6 +1,6 @@
 # Subrepositories
 CARGO_DIRS := ./Dioptase-Emulators/Dioptase-Emulator-Simple ./Dioptase-Emulators/Dioptase-Emulator-Full
-MAKE_DIRS := ./Dioptase-Assembler ./Dioptase-CPUs/Dioptase-Pipe-Simple
+MAKE_DIRS := ./Dioptase-Assembler ./Dioptase-CPUs/Dioptase-Pipe-Simple ./Dioptase-CPUs/Dioptase-Pipe-Full
 
 .PHONY: all test
 
