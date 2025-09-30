@@ -302,10 +302,9 @@ ID - 00001
 11111aaaaabbbbb0000101xxxxxxxxxx - crmv rA, crB - move control register crB into rA  
 11111aaaaabbbbb0000110xxxxxxxxxx - crmv crA, crB - move control register crB into control register crA  
 
-### Set mode - run, sleep, halt
+### Set mode - sleep, halt
 ID - 00010
 
-11111xxxxxxxxxx0001000xxxxxxxxxx - mode run  
 11111xxxxxxxxxx0001001xxxxxxxxxx - mode sleep (awakened by interrupt)  
 11111xxxxxxxxxx0001010xxxxxxxxxx - mode halt
 
