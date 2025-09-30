@@ -26,11 +26,15 @@ Input stream from PS/2 keyboard (0 if nothing, otherwise ASCII)
 ### 0x20002
 UART TX
 
-### 0x20004 - 0x20007
-PIT
+### 0x20003
+UART RX
 
-### 0x20008 - 0x20010
-SD card (IDK exactly what the interface will be yet)
+### 0x20004 - 0x20007
+PIT. Write a 32 bit value `n` and the timer will cause
+an interrupt every `n` clock cycles (clock at 100MHz).
+
+### 0x201F9 - 0x203FF
+SD card. 0x20200 - 0x203FF is a 512 byte buffer for reading and writing. 0x201FA - 0x201FF is a 6 byte buffer used to form a command. When 0x201F9 is written to, the command is sent. SD card sends an interrupt when it is done.
 
 ## 0x26000 - 0x29FFF
 Sprite data. Each sprite is 32x32 pixels, and we reserve space for 8.
