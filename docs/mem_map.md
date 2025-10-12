@@ -34,7 +34,7 @@ PIT. Write a 32 bit value `n` and the timer will cause
 an interrupt every `n` clock cycles (clock at 100MHz).
 
 ### 0x201F9 - 0x203FF
-SD card. 0x20200 - 0x203FF is a 512 byte buffer for reading and writing. 0x201FA - 0x201FF is a 6 byte buffer used to form a command. When 0x201F9 is written to, the command is sent. SD card sends an interrupt when it is done.
+SD card. 0x20200 - 0x203FF is a 512 byte buffer for reading and writing. 0x201FA - 0x201FF is a 6 byte buffer used to form a command. When 0x201F9 is written to, the command is sent. Reading 0x201F9 returns `0x01` while the controller is busy and `0x00` once it is idle. SD card sends an interrupt when it is done.
 
 ## 0x26000 - 0x29FFF
 Sprite data. Each sprite is 32x32 pixels, and we reserve space for 8.
