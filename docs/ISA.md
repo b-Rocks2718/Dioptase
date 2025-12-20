@@ -27,11 +27,11 @@ Memory is byte addressable, misaligned pc will raise an exception, misaligned lo
 On interrupt/exception/syscall, top bit of IMR is set to disable further interrupts. The kernel must clear it after saving pc and flags to enable nested interrupts
 
 OS page size: 4KB  
-Basys 3 has about 192K of memory, so this means we need to map 32 bit addresses to 18 bit addresses.  
-The TLB will do this by looking at the top 20 bits of a 32 bit address and the 12 bit process ID and returning a 6 bit number.   
-The bottom 12 bits of the address pass through the TLB, creating an 18 bit address.  
+Nexys a7 has 128MiB of memory, so this means we need to map 32 bit addresses to 27 bit addresses.  
+The TLB will do this by looking at the top 20 bits of a 32 bit address and the 32 bit process ID and returning a 15 bit number.   
+The bottom 12 bits of the address pass through the TLB, creating an 27 bit address.  
 When in user mode, all addresses are mapped by the TLB.
-When in kernel mode, the bottom 192K of address space does not go through the TLB.
+When in kernel mode, the bottom 128MiB of address space does not go through the TLB (0x00000000 - 0x08000000).
 
 ## User Instructions:
 
@@ -50,7 +50,7 @@ Opcode is 00000
 00000aaaaabbbbbxxxxxxx00011ccccc - nor    rA, rB, rC  
 00000aaaaabbbbbxxxxxxx00100ccccc - xor    rA, rB, rC  
 00000aaaaabbbbbxxxxxxx00101ccccc - xnor  rA, rB, rC  
-00000aaaaaxxxxxxxxxxxx00110ccccc -  not    rA, rC  
+00000aaaaaxxxxxxxxxxxx00110ccccc - not    rA, rC  
 
 #### Shifts:  
 00000aaaaabbbbbxxxxxxx00111ccccc - lsl      rA, rB, rC (logical shift left)  
@@ -354,5 +354,5 @@ Tlb kmiss exception  := 0x83
 Misaligned pc exception  := 0x84  
 Timer interrupt := 0xF0  
 Keyboard interrupt := 0xF1
-
-
+UART RX interrupt := 0xF2
+SD card interrupt := 0xF3
