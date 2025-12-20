@@ -2,7 +2,8 @@
 
 32 bit registers, 32 bit instructions, 32 registers (r0 - r31)
 
-Reads from `r0` always return 0, writes to `r0` are ignored. `r1` will be preferred stack pointer, `r2` preferred base pointer. Return addresses will prefer to be placed in `r31`
+Reads from `r0` always return 0, writes to `r0` are ignored. `r31` will be preferred stack pointer, `r30` preferred base pointer. Return addresses will prefer to be placed in `r29` and return values in `r1`. When in kernel mode, all accesses to `r31`
+actually access the `ksp` register, except for the `crmv` instruction.
 
 5 bit opcodes, 4 flags (Zero, Sign, Carry, Overflow)
 
@@ -14,13 +15,14 @@ Memory is byte addressable, misaligned pc will raise an exception, misaligned lo
 
 ### Control Registers:   
 `cr0` = PSR (processor status register, counter holding kmode history of the processor)  
-`cr1` = PID (holds 12 bit PID of currently executing process)  
+`cr1` = PID (holds PID of currently executing process, used as key by TLB)  
 `cr2` = ISR (interrupt status register, holds which interrupts are active)  
 `cr3` = IMR (interrupt mask register, enables various interrupts. Top bit enables/disables all interrupts)   
 `cr4` = EPC (exceptional PC, pc is placed here after interrupt, syscall, or exception)  
-`cr5` = EFG (exceptional flags, flags are placed here after interrupt, syscall, or exception)  
+`cr5` = FLG (flags register)  
 `cr6` = CDV (clock divider register, sets clock rate)  
 `cr7` = TLB (address is placed here when it causes a TLB miss)
+`cr8` = KSP (kernel stack pointer, stack is set here on a user -> kernel switch)
 
 On interrupt/exception/syscall, top bit of IMR is set to disable further interrupts. The kernel must clear it after saving pc and flags to enable nested interrupts
 
@@ -289,30 +291,50 @@ All share opcode, distinguished by 5 bit ID following rB
 ### Tlb reads/writes/clear   
 ID - 00000
 
-11111aaaaabbbbb0000000xxxxxxxxxx - tlbr rA, rB - if rB exists in tlb, put its map in rA, otherwise put 0 in rA (tlb shouldn’t ever map stuff to the very bottom of the address space)
+TLB reads and writes concatenate the value in the PID register to the key  
+
+11111aaaaabbbbb0000000xxxxxxxxxx - tlbr rA, rB - if rB exists in tlb, put its map in rA, otherwise put 0 in rA
 
 11111aaaaabbbbb0000001xxxxxxxxxx - tlbw rA, rB - write a new tlb entry mapping rB to rA
 
-11111xxxxxxxxxx000001xxxxxxxxxxx - tlbc - clear tlb
+11111xxxxxbbbbb0000010xxxxxxxxxx - tlbi rB - if rB exists in tlb, invalidate its entry
+
+11111xxxxxxxxxx0000011xxxxxxxxxx - tlbc - clear tlb
+
+#### TLB Structure
+
+A TLB entry looks like this: `PID (32 bits) | VPN (20 bits) || PPN (15 bits) | Flags (12 bits)`  
+The part to the left of the `||` is the key, the part on the right is the value.
+
+For now, only the bottom 5 bits of the flags are used. They are `G U X W R` (with `R` being in bit 0)  
+G - global (if set, any PID can match this entry)  
+U - user (if set, this entry becomes valid in user mode)  
+X - executable  
+W - writable  
+R - readable   
+
+tlbr rA, rB will use the PID and (rB & 0xFFFFF000) as a key and put the value in rA  
+tlbw rA, rB will use the PID and (rB & 0xFFFFF000) as a key and store (rA & 0x7FFFFFF) as the value in the TLB
 
 ### Move to/from control regs
 ID - 00001
 
 11111aaaaabbbbb0000100xxxxxxxxxx - crmv crA, rB - move rB into control register crA  
 11111aaaaabbbbb0000101xxxxxxxxxx - crmv rA, crB - move control register crB into rA  
-11111aaaaabbbbb0000110xxxxxxxxxx - crmv crA, crB - move control register crB into control register crA  
+11111aaaaabbbbb0000110xxxxxxxxxx - crmv crA, crB - move control register crB into control register crA   
+11111aaaaabbbbb0000111xxxxxxxxxx - crmv rA, rB - move rB into rA (only use is to read/write r31 when in kernel mode)   
 
 ### Set mode - sleep, halt
 ID - 00010
 
-11111xxxxxxxxxx0001001xxxxxxxxxx - mode sleep (awakened by interrupt)  
+11111xxxxxxxxxx0001001xxxxxxxxxx - mode sleep - (awakened by interrupt)  
 11111xxxxxxxxxx0001010xxxxxxxxxx - mode halt
 
 ### Return from exception/interrupt
 ID - 00011
 
-11111aaaaabbbbb000110xxxxxxxxxxx   rfe rA, rB - (return from exception) update kmode, restore flags from rA, and jump to rB  
-11111aaaaabbbbb000111xxxxxxxxxxx   rfi rA, rB - (return from exception) update kmode, restore flags from rA, and jump to rB, and reenable interrupts
+11111xxxxxxxxxx000110xxxxxxxxxxx - rfe - (return from exception) update kmode and jump to EPC  
+11111xxxxxxxxxx000111xxxxxxxxxxx - rfi - (return from interrupt) update kmode and jump to EPC, and reenable interrupts  
 
 Leaves lots of unused opcodes, so the ISA can be expanded over time
 
