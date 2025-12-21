@@ -57,6 +57,9 @@ VGA frame count register (Read-only)
 increments once per frame  
 @ 60Hz this takes > 2 years to overflow
 
+## 7FE5B4C - 7FE5B4F
+Clock divider register
+
 ## 0x7FE8000 - 0x7FEFFFF
 Tilemap. Each tile is 8x8 pixels, 1 pixel takes 2 bytes, and we reserve space for 256
 

@@ -11,7 +11,8 @@ actually access the `ksp` register, except for the `crmv` instruction.
 
 Kernel mode will allow privileged instructions, user mode will raise an exception on privileged instructions. 
 
-Memory is byte addressable, misaligned pc will raise an exception, misaligned loads/stores are allowed
+Memory is byte addressable, misaligned pc will raise an exception, misaligned loads/stores will have the address
+rounded down to make it aligned (might change this later to have it raise an exception) 
 
 ### Control Registers:   
 `cr0` = PSR (processor status register, counter holding kmode history of the processor)  
@@ -20,9 +21,12 @@ Memory is byte addressable, misaligned pc will raise an exception, misaligned lo
 `cr3` = IMR (interrupt mask register, enables various interrupts. Top bit enables/disables all interrupts)   
 `cr4` = EPC (exceptional PC, pc is placed here after interrupt, syscall, or exception)  
 `cr5` = FLG (flags register)  
-`cr6` = CDV (clock divider register, sets clock rate)  
+`cr6` = No special meaning right now    
 `cr7` = TLB (address is placed here when it causes a TLB miss)
-`cr8` = KSP (kernel stack pointer, stack is set here on a user -> kernel switch)
+`cr8` = KSP (kernel stack pointer, stack is set here on a user -> kernel switch)  
+`cr9` = CID (Read-only core ID register)  
+`cr10` = MBI (maibox in, data appears here when an IPI happens)  
+`cr11` = MBO (mailbox out, write data here and do an IPI to send the value to another core)  
 
 On interrupt/exception/syscall, top bit of IMR is set to disable further interrupts. The kernel must clear it after saving pc and flags to enable nested interrupts
 
@@ -110,7 +114,7 @@ i is 5 bit immediate
 i is 12 bit immediate, sign extended to 32 bits  
 00001aaaaabbbbb01110iiiiiiiiiiii  - add    rA, rB, i     
 00001aaaaabbbbb01111iiiiiiiiiiii -  addc  rA, rB, i  
-00001aaaaabbbbb10000iiiiiiiiiiii - sub    rA, rB, i // not really necessary  
+00001aaaaabbbbb10000iiiiiiiiiiii - sub    rA, rB, i - does rA <- (i - rB), so this is different from 'add rA, rB, -i'  
 00001aaaaabbbbb10001iiiiiiiiiiii - subb  rA, rB, i   
 00001aaaaabbbbb10010iiiiiiiiiiii - mul    rA, rB, i  
 
@@ -162,8 +166,8 @@ rA is data, i is 21 bit immediate, sign extended to 32 bits
 
 Address gets added to PC before it's used
 
-00101aaaaa0iiiiiiiiiiiiiiiiiiiii sw rA, i  
-00101aaaaa1iiiiiiiiiiiiiiiiiiiii lw rA, i 
+00101aaaaa0iiiiiiiiiiiiiiiiiiiii sw rA, [i]  
+00101aaaaa1iiiiiiiiiiiiiiiiiiiii lw rA, [i] 
 
 #### Store/load double:
 Same encoding as above, but opcodes are 00110 - 01000  
@@ -282,6 +286,59 @@ For now, we’ll start with supporting
 
 01111xxxxxxxxxxxxxxxxxxx00000000 - sys EXIT, returning control from the user code to the OS
 
+### Atomics
+
+The ISA supports atomic fetch add and atomic swap instructions for all three addressing modes, but only for 32 bit data
+
+#### Fetch Add (Absolute Addressing):  
+Opcode is 10000
+
+rA is destination reg, rC is data, rB is base, i is 12 bit immediate, sign extended to 32 bits
+
+10000aaaaacccccbbbbbiiiiiiiiiiii fada rA, rC, [rB, i]  
+
+#### Fetch Add (PC-Relative Addressing):  
+Opcode is 10001
+
+rA is destination reg, rC is data, rB is base, i is 12 bit immediate, sign extended to 32 bits  
+
+Address gets added to PC before it's used
+
+10001aaaaacccccbbbbbiiiiiiiiiiii fad rA, rC, [rB, i]  
+
+#### Fetch Add (PC-Relative Addressing, immediate):  
+Opcode is 10010
+
+rA is destination reg, rC is data, i is 17 bit immediate, sign extended to 32 bits
+
+Address gets added to PC before it's used
+
+10010aaaaaccccciiiiiiiiiiiiiiiii fad rA, rC, [i]  
+
+#### Swap (Absolute Addressing):  
+Opcode is 10011
+
+rA is destination reg, rC is data, rB is base, i is 12 bit immediate, sign extended to 32 bits
+
+10011aaaaabbbbbccccciiiiiiiiiiii swpa rA, rC, [rB, i]  
+
+#### Swap (PC-Relative Addressing):  
+Opcode is 10100
+
+rA is destination reg, rC is data, rB is base, i is 12 bit immediate, sign extended to 32 bits  
+
+Address gets added to PC before it's used
+
+10100aaaaabbbbbccccciiiiiiiiiiii swp rA, rC, [rB, i]  
+
+#### Swap (PC-Relative Addressing, immediate):  
+Opcode is 10101
+
+rA is destination reg, rC is data, i is 17 bit immediate, sign extended to 32 bits
+
+Address gets added to PC before it's used
+
+10101aaaaaccccciiiiiiiiiiiiiiiii swp rA, rC, [i]   
 
 ## Privileged Instructions:
 
@@ -338,6 +395,13 @@ ID - 00011
 
 Leaves lots of unused opcodes, so the ISA can be expanded over time
 
+### Inter-processor interrupts
+ID - 00100
+
+11111aaaaaxxxxx001000xxxxxxxxxnn - ipi rA, n - interrupt core n, put success code in rA (1 => success, 0 => failure)  
+
+11111aaaaaxxxxx001001xxxxxxxxxxx - ipi rA, all - interrupt all other cores, put bitmap of successes in rA
+
 ## Exceptions:
 
 All exceptions, interrupts, and syscalls cause the processor to enter kernel mode and jump to the address specified in the interrupt vector table (IVT).
@@ -357,6 +421,7 @@ Keyboard interrupt := 0xF1
 UART RX interrupt := 0xF2  
 SD card interrupt := 0xF3  
 VGA vblank interrupt := 0xF4  
+IPI interrupt := 0xF5
 
 #### Interrupt bits in IMR/ISR
 Timer interrupt := 0x00000001  
@@ -364,3 +429,6 @@ Keyboard interrupt := 0x00000002
 UART RX interrupt := 0x00000004    
 SD card interrupt := 0x00000008  
 VGA vblank interrupt := 0x00000010  
+IPI interrupt := 0x00000020
+
+Timer interrupt goes to all cores, IPI goes to the cores specified by the instruction. KB, UART, SD, and VGA interrupts are sent to a single core whenever they happen. The core is chosen with a round-robin distribution.
