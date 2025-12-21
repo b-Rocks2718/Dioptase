@@ -352,7 +352,15 @@ Privileges exception  := 0x81
 Tlb umiss exception  := 0x82  
 Tlb kmiss exception  := 0x83  
 Misaligned pc exception  := 0x84  
-Timer interrupt := 0xF0  
-Keyboard interrupt := 0xF1
-UART RX interrupt := 0xF2
-SD card interrupt := 0xF3
+Timer interrupt := 0xF0   
+Keyboard interrupt := 0xF1  
+UART RX interrupt := 0xF2  
+SD card interrupt := 0xF3  
+VGA vblank interrupt := 0xF4  
+
+#### Interrupt bits in IMR/ISR
+Timer interrupt := 0x00000001  
+Keyboard interrupt := 0x00000002  
+UART RX interrupt := 0x00000004    
+SD card interrupt := 0x00000008  
+VGA vblank interrupt := 0x00000010  
