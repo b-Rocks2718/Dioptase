@@ -10,7 +10,9 @@ The goal is to build an FPGA computer from scratch - creating an ISA, verilog pr
 
 I/O devices:
  - PS/2 Keyboard
+ - PS/2 Mouse
  - VGA Monitor
+ - PWM Audio
  - SD card storage
  - UART
  - PIT (Programmable Interrupt Timer)
@@ -28,9 +30,9 @@ Pull the updates with `git pull --recurse-submodules`
 - [Assembler](https://github.com/b-Rocks2718/Dioptase-Assembler) (Done)
 - Emulators:
   - [User ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Simple) (Done)
-  - [Full ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Full) (Basically done)
+  - [Full ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Full) (Done except for mouse and audio)
 - Processors:
-  - [User ISA Pipeline](https://github.com/b-Rocks2718/Dioptase-Pipe-Simple) (Done)
+  - [User ISA Pipeline](https://github.com/b-Rocks2718/Dioptase-Pipe-Simple) (Works on an old version of the ISA, needs updating)
   - [Full ISA Pipeline](https://github.com/b-Rocks2718/Dioptase-Pipe-Full) (In progress)
 - Languages:
   - [C Compiler](https://github.com/b-Rocks2718/Dioptase-C-Compiler) (In progress)
