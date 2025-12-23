@@ -70,7 +70,6 @@ Opcode is 00000
 00000aaaaabbbbbxxxxxxx01111ccccc - addc  rA, rB, rC (add with carry)  
 00000aaaaabbbbbxxxxxxx10000ccccc - sub   rA, rB, rC  
 00000aaaaabbbbbxxxxxxx10001ccccc - subb  rA, rB, rC (subtract with borrow)  
-00000aaaaabbbbbxxxxxxx10010ccccc - mul   rA, rB, rC
 
 Plenty of instruction space to expand this over time - floating point stuff will likely be next  
 
@@ -116,7 +115,6 @@ i is 12 bit immediate, sign extended to 32 bits
 00001aaaaabbbbb01111iiiiiiiiiiii -  addc  rA, rB, i  
 00001aaaaabbbbb10000iiiiiiiiiiii - sub    rA, rB, i - does rA <- (i - rB), so this is different from 'add rA, rB, -i'  
 00001aaaaabbbbb10001iiiiiiiiiiii - subb  rA, rB, i   
-00001aaaaabbbbb10010iiiiiiiiiiii - mul    rA, rB, i  
 
 some instruction space to expand this over time
 
