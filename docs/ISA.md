@@ -70,6 +70,10 @@ Opcode is 00000
 `00000aaaaabbbbbxxxxxxx01111ccccc` - `addc  rA, rB, rC` (add with carry)  
 `00000aaaaabbbbbxxxxxxx10000ccccc` - `sub   rA, rB, rC`  
 `00000aaaaabbbbbxxxxxxx10001ccccc` - `subb  rA, rB, rC` (subtract with borrow)  
+`00000aaaaaxxxxxxxxxxxx10010ccccc` - `sxtb  rA, rC` (sign extend byte)
+`00000aaaaaxxxxxxxxxxxx10011ccccc` - `sxtd  rA, rC` (sign extend double)
+`00000aaaaaxxxxxxxxxxxx10100ccccc` - `tncb  rA, rC` (truncate to byte)
+`00000aaaaaxxxxxxxxxxxx10101ccccc` - `tncd  rA, rC` (truncate to double)
 
 Plenty of instruction space to expand this over time - floating point stuff will likely be next  
 
