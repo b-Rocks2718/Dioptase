@@ -57,23 +57,23 @@ Opcode is 00000
 `00000aaaaaxxxxxxxxxxxx00110ccccc` - `not  rA, rC`  
 
 #### Shifts:  
-`00000aaaaabbbbbxxxxxxx00111ccccc` - `lsl      rA, rB, rC` (logical shift left)  
-`00000aaaaabbbbbxxxxxxx01000ccccc` - `lsr     rA, rB, rC` (logical shift right)  
-`00000aaaaabbbbbxxxxxxx01001ccccc` - `asr    rA, rB, rC` (arithmetic shift right)  
-`00000aaaaabbbbbxxxxxxx01010ccccc` - `rotl    rA, rB, rC` (rotate left)  
-`00000aaaaabbbbbxxxxxxx01011ccccc` - `rotr    rA, rB, rC` (rotate right)  
-`00000aaaaabbbbbxxxxxxx01100ccccc` - `lslc   rA, rB, rC` (shift left through carry)  
-`00000aaaaabbbbbxxxxxxx01101ccccc` - `lsrc   rA, rB, rC` (shift right through carry)  
+`00000aaaaabbbbbxxxxxxx00111ccccc` - `lsl  rA, rB, rC` (logical shift left)  
+`00000aaaaabbbbbxxxxxxx01000ccccc` - `lsr  rA, rB, rC` (logical shift right)  
+`00000aaaaabbbbbxxxxxxx01001ccccc` - `asr  rA, rB, rC` (arithmetic shift right)  
+`00000aaaaabbbbbxxxxxxx01010ccccc` - `rotl rA, rB, rC` (rotate left)  
+`00000aaaaabbbbbxxxxxxx01011ccccc` - `rotr rA, rB, rC` (rotate right)  
+`00000aaaaabbbbbxxxxxxx01100ccccc` - `lslc rA, rB, rC` (shift left through carry)  
+`00000aaaaabbbbbxxxxxxx01101ccccc` - `lsrc rA, rB, rC` (shift right through carry)  
 
 #### Arithmetic:  
-`00000aaaaabbbbbxxxxxxx01110ccccc` - `add   rA, rB, rC`  
-`00000aaaaabbbbbxxxxxxx01111ccccc` - `addc  rA, rB, rC` (add with carry)  
-`00000aaaaabbbbbxxxxxxx10000ccccc` - `sub   rA, rB, rC`  
-`00000aaaaabbbbbxxxxxxx10001ccccc` - `subb  rA, rB, rC` (subtract with borrow)  
-`00000aaaaaxxxxxxxxxxxx10010ccccc` - `sxtb  rA, rC` (sign extend byte)
-`00000aaaaaxxxxxxxxxxxx10011ccccc` - `sxtd  rA, rC` (sign extend double)
-`00000aaaaaxxxxxxxxxxxx10100ccccc` - `tncb  rA, rC` (truncate to byte)
-`00000aaaaaxxxxxxxxxxxx10101ccccc` - `tncd  rA, rC` (truncate to double)
+`00000aaaaabbbbbxxxxxxx01110ccccc` - `add  rA, rB, rC`  
+`00000aaaaabbbbbxxxxxxx01111ccccc` - `addc rA, rB, rC` (add with carry)  
+`00000aaaaabbbbbxxxxxxx10000ccccc` - `sub  rA, rB, rC`  
+`00000aaaaabbbbbxxxxxxx10001ccccc` - `subb rA, rB, rC` (subtract with borrow)  
+`00000aaaaaxxxxxxxxxxxx10010ccccc` - `sxtb rA, rC` (sign extend byte)
+`00000aaaaaxxxxxxxxxxxx10011ccccc` - `sxtd rA, rC` (sign extend double)
+`00000aaaaaxxxxxxxxxxxx10100ccccc` - `tncb rA, rC` (truncate to byte)
+`00000aaaaaxxxxxxxxxxxx10101ccccc` - `tncd rA, rC` (truncate to double)
 
 Plenty of instruction space to expand this over time - floating point stuff will likely be next  
 
@@ -96,11 +96,11 @@ But i = 0x0F and y = 2 decodes as 0x000F0000
 
 `00001aaaaabbbbb00000xxyyiiiiiiii` - `and  rA, rB, i`  
 `00001aaaaabbbbb00001xxyyiiiiiiii` - `nand rA, rB, i`     
-`00001aaaaabbbbb00010xxyyiiiiiiii` - `or      rA, rB, i`   
-`00001aaaaabbbbb00011xxyyiiiiiiii` - `nor    rA, rB, i`   
-`00001aaaaabbbbb00100xxyyiiiiiiii` - `xor    rA, rB, i`  
-`00001aaaaabbbbb00101xxyyiiiiiiii` - `xnor  rA, rB, i`  
-`00001aaaaaxxxxx00110xxyyiiiiiiii` - `not    rA, i`  
+`00001aaaaabbbbb00010xxyyiiiiiiii` - `or   rA, rB, i`   
+`00001aaaaabbbbb00011xxyyiiiiiiii` - `nor  rA, rB, i`   
+`00001aaaaabbbbb00100xxyyiiiiiiii` - `xor  rA, rB, i`  
+`00001aaaaabbbbb00101xxyyiiiiiiii` - `xnor rA, rB, i`  
+`00001aaaaaxxxxx00110xxyyiiiiiiii` - `not  rA, i`  
 
 #### Shifts:  
 `i` is 5 bit immediate
@@ -134,6 +134,31 @@ Use with addi to move any 32 bit value into a register
 
 `00010aaaaaiiiiiiiiiiiiiiiiiiiiii` - `lui rA, i`
 
+### Assembler Macros (Non-ISA)
+
+The assembler provides `movi` as a macro that expands to `lui` + `addi` to
+materialize a 32-bit constant. `movi`/`movu`/`movl` are assembler-only; the
+hardware only sees the underlying `lui`/`addi` instructions.
+
+When the `movi` immediate is a label, the assembler does not materialize the
+absolute label address. Instead, it encodes a PC-relative offset:
+
+- `movi rA, label` loads `rA = label - (pc_of_movu + 12)`.
+- `pc_of_movu` is the address of the `lui` emitted by `movi`.
+
+This offset is chosen so that a relative branch immediately after `movi`
+reaches the label:
+
+```
+movi rA, label
+br r0, rA
+```
+
+Here `br` executes at `pc_of_movu + 8`, so `br` adds `pc + 4` and reaches
+`label`. If you need an absolute address for a label, add the current
+`pc + 4` to the offset (for example, use `br rTmpPc, r0` to capture
+`pc + 4` into a register, then `add rA, rA, rTmpPc`).
+
 ### Memory 
 
 sw - store word  
@@ -149,7 +174,7 @@ y = 1 - preincrement
 y = 2 - postincrement
 
 `00011aaaaabbbbb0yyzziiiiiiiiiiii` - `swa rA, [rB], i`  
-`00011aaaaabbbbb1yyzziiiiiiiiiiii` - `lwa  rA, [rB], i` 
+`00011aaaaabbbbb1yyzziiiiiiiiiiii` - `lwa rA, [rB], i` 
 
 #### PC-Relative Addressing:  
 Opcode is 00100
@@ -159,7 +184,7 @@ Opcode is 00100
 Address gets added to PC before it's used
 
 `00100aaaaabbbbb0iiiiiiiiiiiiiiii` - `sw rA, [rB], i`  
-`00100aaaaabbbbb1iiiiiiiiiiiiiiii` - `lw  rA, [rB], i` 
+`00100aaaaabbbbb1iiiiiiiiiiiiiiii` - `lw rA, [rB], i` 
 
 #### PC-Relative Addressing (immediate):  
 Opcode is 00101
@@ -192,25 +217,25 @@ Opcode is 01100
 5 bit branch code determines which condition to use. i is 22 bit immediate, sign extended to 32 bit    
 If condition is met, branches to pc + 4 * (i + 1)
 
-`0110000000iiiiiiiiiiiiiiiiiiiiii` - `br i`      (unconditional branch)  
-`0110000001iiiiiiiiiiiiiiiiiiiiii` - `bz i`     (branch if zero)  
-`0110000010iiiiiiiiiiiiiiiiiiiiii` - `bnz i`   (branch if nonzero)  
-`0110000011iiiiiiiiiiiiiiiiiiiiii` - `bs i`     (branch if sign [negative])  
-`0110000100iiiiiiiiiiiiiiiiiiiiii` - `bns i`   (branch not sign [not negative])  
-`0110000101iiiiiiiiiiiiiiiiiiiiii` - `bc i`     (branch if carry)  
-`0110000110iiiiiiiiiiiiiiiiiiiiii` - `bnc i`   (branch if not carry)  
-`0110000111iiiiiiiiiiiiiiiiiiiiii` - `bo i`     (branch if overflow)  
+`0110000000iiiiiiiiiiiiiiiiiiiiii` - `br i`   (unconditional branch)  
+`0110000001iiiiiiiiiiiiiiiiiiiiii` - `bz i`   (branch if zero)  
+`0110000010iiiiiiiiiiiiiiiiiiiiii` - `bnz i`  (branch if nonzero)  
+`0110000011iiiiiiiiiiiiiiiiiiiiii` - `bs i`   (branch if sign [negative])  
+`0110000100iiiiiiiiiiiiiiiiiiiiii` - `bns i`  (branch not sign [not negative])  
+`0110000101iiiiiiiiiiiiiiiiiiiiii` - `bc i`   (branch if carry)  
+`0110000110iiiiiiiiiiiiiiiiiiiiii` - `bnc i`  (branch if not carry)  
+`0110000111iiiiiiiiiiiiiiiiiiiiii` - `bo i`   (branch if overflow)  
 `0110001000iiiiiiiiiiiiiiiiiiiiii` - `bno i`  (branch if not overflow)  
-`0110001001iiiiiiiiiiiiiiiiiiiiii` - `bps i`    (branch if positive)  
-`0110001010iiiiiiiiiiiiiiiiiiiiii` - `bnps i`  (branch if not positive)  
-`0110001011iiiiiiiiiiiiiiiiiiiiii` - `bg i`    (branch if greater [signed])  
+`0110001001iiiiiiiiiiiiiiiiiiiiii` - `bps i`  (branch if positive)  
+`0110001010iiiiiiiiiiiiiiiiiiiiii` - `bnps i` (branch if not positive)  
+`0110001011iiiiiiiiiiiiiiiiiiiiii` - `bg i`   (branch if greater [signed])  
 `0110001100iiiiiiiiiiiiiiiiiiiiii` - `bge i`  (branch if greater or equal [signed])  
-`0110001101iiiiiiiiiiiiiiiiiiiiii` - `bl i`     (branch if less [signed])  
-`0110001110iiiiiiiiiiiiiiiiiiiiii` - `ble i`   (branch if less or equal [signed])  
-`0110001111iiiiiiiiiiiiiiiiiiiiii` - `ba i`    (branch if above [unsigned])  
-`0110010000iiiiiiiiiiiiiiiiiiiiii` - `bae i` (branch if above or equal [unsigned])  
-`0110010001iiiiiiiiiiiiiiiiiiiiii` - `bb i`    (branch if below [unsigned])  
-`0110010010iiiiiiiiiiiiiiiiiiiiii` - `bbe i` (branch if below or equal [unsigned])  
+`0110001101iiiiiiiiiiiiiiiiiiiiii` - `bl i`   (branch if less [signed])  
+`0110001110iiiiiiiiiiiiiiiiiiiiii` - `ble i`  (branch if less or equal [signed])  
+`0110001111iiiiiiiiiiiiiiiiiiiiii` - `ba i`   (branch if above [unsigned])  
+`0110010000iiiiiiiiiiiiiiiiiiiiii` - `bae i`  (branch if above or equal [unsigned])  
+`0110010001iiiiiiiiiiiiiiiiiiiiii` - `bb i`   (branch if below [unsigned])  
+`0110010010iiiiiiiiiiiiiiiiiiiiii` - `bbe i`  (branch if below or equal [unsigned])  
 
 Leaves room if more branch conditions are ever needed
 
@@ -223,25 +248,25 @@ Branch and link register
 5 bit branch code determines which condition to use.
 If condition is met, branches to rB and stores pc + 4 in rA (set rA as r0 if you don’t want to save it)
 
-`0110100000xxxxxxxxxxxxaaaaabbbbb` - `bra rA, rB`     (unconditional branch)  
-`0110100001xxxxxxxxxxxxaaaaabbbbb` - `bza rA, rB`     (branch if zero)  
-`0110100010xxxxxxxxxxxxaaaaabbbbb` - `bnza rA, rB`   (branch if nonzero)  
-`0110100011xxxxxxxxxxxxaaaaabbbbb` - `bsa rA, rB`     (branch if sign [negative])  
-`0110100100xxxxxxxxxxxxaaaaabbbbb` - `bnsa rA, rB`   (branch not sign [not negative])  
-`0110100101xxxxxxxxxxxxaaaaabbbbb` - `bca rA, rB`     (branch if carry)  
-`0110100110xxxxxxxxxxxxaaaaabbbbb` - `bnca rA, rB`   (branch if not carry)  
-`0110100111xxxxxxxxxxxxaaaaabbbbb` - `boa rA, rB`     (branch if overflow)  
-`0110101000xxxxxxxxxxxxaaaaabbbbb` - `bnoa rA, rB`  (branch if not overflow)  
-`0110101001xxxxxxxxxxxxaaaaabbbbb` - `bpa rA, rB`    (branch if positive)  
-`0110101010xxxxxxxxxxxxaaaaabbbbb` - `bnpa rA, rB`  (branch if not positive)  
-`0110101011xxxxxxxxxxxxaaaaabbbbb` - `bga rA, rB`    (branch if greater [signed])  
-`0110101100xxxxxxxxxxxxaaaaabbbbb` - `bgea rA, rB`  (branch if greater or equal [signed])  
-`0110101101xxxxxxxxxxxxaaaaabbbbb` - `bla rA, rB`     (branch if less [signed])  
-`0110101110xxxxxxxxxxxxaaaaabbbbb` - `blea rA, rB`   (branch if less or equal [signed])  
-`0110101111xxxxxxxxxxxxaaaaabbbbb` - `baa rA, rB`    (branch if above [unsigned])  
-`0110110000xxxxxxxxxxxxaaaaabbbbb` - `baea rA, rB`  (branch if above or equal [unsigned])  
-`0110110001xxxxxxxxxxxxaaaaabbbbb` - `bba rA, rB`    (branch if below [unsigned])  
-`0110110010xxxxxxxxxxxxaaaaabbbbb` - `bbea rA, rB`  (branch if below or equal [unsigned])  
+`0110100000xxxxxxxxxxxxaaaaabbbbb` - `bra rA, rB`  (unconditional branch)  
+`0110100001xxxxxxxxxxxxaaaaabbbbb` - `bza rA, rB`  (branch if zero)  
+`0110100010xxxxxxxxxxxxaaaaabbbbb` - `bnza rA, rB` (branch if nonzero)  
+`0110100011xxxxxxxxxxxxaaaaabbbbb` - `bsa rA, rB`  (branch if sign [negative])  
+`0110100100xxxxxxxxxxxxaaaaabbbbb` - `bnsa rA, rB` (branch not sign [not negative])  
+`0110100101xxxxxxxxxxxxaaaaabbbbb` - `bca rA, rB`  (branch if carry)  
+`0110100110xxxxxxxxxxxxaaaaabbbbb` - `bnca rA, rB` (branch if not carry)  
+`0110100111xxxxxxxxxxxxaaaaabbbbb` - `boa rA, rB`  (branch if overflow)  
+`0110101000xxxxxxxxxxxxaaaaabbbbb` - `bnoa rA, rB` (branch if not overflow)  
+`0110101001xxxxxxxxxxxxaaaaabbbbb` - `bpa rA, rB`  (branch if positive)  
+`0110101010xxxxxxxxxxxxaaaaabbbbb` - `bnpa rA, rB` (branch if not positive)  
+`0110101011xxxxxxxxxxxxaaaaabbbbb` - `bga rA, rB`  (branch if greater [signed])  
+`0110101100xxxxxxxxxxxxaaaaabbbbb` - `bgea rA, rB` (branch if greater or equal [signed])  
+`0110101101xxxxxxxxxxxxaaaaabbbbb` - `bla rA, rB`  (branch if less [signed])  
+`0110101110xxxxxxxxxxxxaaaaabbbbb` - `blea rA, rB` (branch if less or equal [signed])  
+`0110101111xxxxxxxxxxxxaaaaabbbbb` - `baa rA, rB`  (branch if above [unsigned])  
+`0110110000xxxxxxxxxxxxaaaaabbbbb` - `baea rA, rB` (branch if above or equal [unsigned])  
+`0110110001xxxxxxxxxxxxaaaaabbbbb` - `bba rA, rB`  (branch if below [unsigned])  
+`0110110010xxxxxxxxxxxxaaaaabbbbb` - `bbea rA, rB` (branch if below or equal [unsigned])  
 
 Leaves room if more branch conditions are ever needed
 
@@ -254,24 +279,24 @@ Branch and link register
 5 bit branch code determines which condition to use.
 If condition is met, branches to rB + pc + 4 and stores pc + 4 in rA (set rA as r0 if you don’t want to save it)
 
-`0111000000xxxxxxxxxxxxaaaaabbbbb` - `br rA, rB`     (unconditional branch)  
-`0111000001xxxxxxxxxxxxaaaaabbbbb` - `bz rA, rB`     (branch if zero)  
-`0111000010xxxxxxxxxxxxaaaaabbbbb` - `bnz rA, rB`   (branch if nonzero)  
-`0111000011xxxxxxxxxxxxaaaaabbbbb` - `bs rA, rB`     (branch if sign [negative])  
-`0111000100xxxxxxxxxxxxaaaaabbbbb` - `bns rA, rB`   (branch not sign [not negative])  
-`0111000101xxxxxxxxxxxxaaaaabbbbb` - `bc rA, rB`     (branch if carry)  
-`0111000110xxxxxxxxxxxxaaaaabbbbb` - `bnc rA, rB`   (branch if not carry)  
-`0111000111xxxxxxxxxxxxaaaaabbbbb` - `bo rA, rB`     (branch if overflow)  
+`0111000000xxxxxxxxxxxxaaaaabbbbb` - `br rA, rB`   (unconditional branch)  
+`0111000001xxxxxxxxxxxxaaaaabbbbb` - `bz rA, rB`   (branch if zero)  
+`0111000010xxxxxxxxxxxxaaaaabbbbb` - `bnz rA, rB`  (branch if nonzero)  
+`0111000011xxxxxxxxxxxxaaaaabbbbb` - `bs rA, rB`   (branch if sign [negative])  
+`0111000100xxxxxxxxxxxxaaaaabbbbb` - `bns rA, rB`  (branch not sign [not negative])  
+`0111000101xxxxxxxxxxxxaaaaabbbbb` - `bc rA, rB`   (branch if carry)  
+`0111000110xxxxxxxxxxxxaaaaabbbbb` - `bnc rA, rB`  (branch if not carry)  
+`0111000111xxxxxxxxxxxxaaaaabbbbb` - `bo rA, rB`   (branch if overflow)  
 `0111001000xxxxxxxxxxxxaaaaabbbbb` - `bno rA, rB`  (branch if not overflow)  
-`0111001001xxxxxxxxxxxxaaaaabbbbb` - `bp rA, rB`    (branch if positive)  
+`0111001001xxxxxxxxxxxxaaaaabbbbb` - `bp rA, rB`   (branch if positive)  
 `0111001010xxxxxxxxxxxxaaaaabbbbb` - `bnp rA, rB`  (branch if not positive)  
-`0111001011xxxxxxxxxxxxaaaaabbbbb` - `bg rA, rB`    (branch if greater [signed])  
+`0111001011xxxxxxxxxxxxaaaaabbbbb` - `bg rA, rB`   (branch if greater [signed])  
 `0111001100xxxxxxxxxxxxaaaaabbbbb` - `bge rA, rB`  (branch if greater or equal [signed])  
-`0111001101xxxxxxxxxxxxaaaaabbbbb` - `bl rA, rB`     (branch if less [signed])  
-`0111001110xxxxxxxxxxxxaaaaabbbbb` - `ble rA, rB`   (branch if less or equal [signed])  
-`0111001111xxxxxxxxxxxxaaaaabbbbb` - `ba rA, rB`    (branch if above [unsigned])  
+`0111001101xxxxxxxxxxxxaaaaabbbbb` - `bl rA, rB`   (branch if less [signed])  
+`0111001110xxxxxxxxxxxxaaaaabbbbb` - `ble rA, rB`  (branch if less or equal [signed])  
+`0111001111xxxxxxxxxxxxaaaaabbbbb` - `ba rA, rB`   (branch if above [unsigned])  
 `0111010000xxxxxxxxxxxxaaaaabbbbb` - `bae rA, rB`  (branch if above or equal [unsigned])  
-`0111010001xxxxxxxxxxxxaaaaabbbbb` - `bb rA, rB`    (branch if below [unsigned])  
+`0111010001xxxxxxxxxxxxaaaaabbbbb` - `bb rA, rB`   (branch if below [unsigned])  
 `0111010010xxxxxxxxxxxxaaaaabbbbb` - `bbe rA, rB`  (branch if below or equal [unsigned]) 
 
 ### Syscalls
