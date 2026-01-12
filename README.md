@@ -25,6 +25,10 @@ Pull the updates with `git pull --recurse-submodules`
 
 `make test` will test all the subrepos
 
+`source env.sh` to add `basm`, `bemu`, and `bcc` to `PATH`
+`env.sh` also exports `DIOPTASE_ROOT` for portable tool lookup
+- Assembler CRT lookup: `DIOPTASE_CRT_DIR` (preferred) or `DIOPTASE_ROOT` + `Dioptase-OS/crt`
+- Compiler assembler lookup: `DIOPTASE_ASSEMBLER` (preferred) or `DIOPTASE_ROOT` + `Dioptase-Assembler/build/*/basm`
 
 ## Progress
 

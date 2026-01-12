@@ -13,9 +13,9 @@
 [submodule "Dioptase-Emulators/Dioptase-Emulator-Full"]
 	path = Dioptase-Emulators/Dioptase-Emulator-Full
 	url = git@github.com:b-Rocks2718/Dioptase-Emulator-Full.git
-[submodule "Dioptase-Pipe-Full"]
-	path = Dioptase-Pipe-Full
-	url = git@github.com:b-Rocks2718/Dioptase-Pipe-Full.git
 [submodule "Dioptase-CPUs/Dioptase-Pipe-Full"]
 	path = Dioptase-CPUs/Dioptase-Pipe-Full
 	url = git@github.com:b-Rocks2718/Dioptase-Pipe-Full.git
+[submodule "Dioptase-OS"]
+	path = Dioptase-OS
+	url = https://github.com/b-Rocks2718/Dioptase-OS.git
