@@ -42,4 +42,4 @@ Pull the updates with `git pull --recurse-submodules`
 - Languages:
   - [C Compiler](https://github.com/b-Rocks2718/Dioptase-C-Compiler) (In progress)
   - Lox Interpreter (Not yet started)
-- OS (Not yet started)
+- [OS](https://github.com/b-Rocks2718/Dioptase-OS) (Not yet started)
