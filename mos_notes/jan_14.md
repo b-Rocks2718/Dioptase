@@ -1,0 +1,49 @@
+# MOS Notes 1/14
+
+## OS Minimum requirements
+
+- Maximize Parallelism
+  - Threads
+  - I/O that doesn't block/require polling
+  - GPU (optional)
+- Kernel never panics
+- Very limited spinning (block instead)
+  - Any sections protected by spinlocks must be O(1) with small constant
+  - Any sections with interrupts disabled must be O(1) with small constant
+- Can decide on cooperative or preemptive kernel
+- Kernel should get out of the way quickly
+- Processes
+  - Virtual Address Space
+  - threads
+  - current working directory
+  - uid
+  - gid
+  - env
+  - file descriptors
+  - sockets
+  - network connections
+- Syscalls
+  - mmap
+  - fork (COW), vfork, exec 
+  - create threads
+- Signals
+- Dynamic
+  - Linking (shared libraries)
+  - Loading
+- Demand Paging
+- Page-out / swap
+- Page cache
+- File System
+  - Must detect corruption
+  - Snapshots (optional)
+  - users/groups/access control
+  - Files, directories, sockets, files for devices, symbolic links
+  - reflink (copy on write within filesystem, optional)
+  - dedup (optional)
+- Login/logout
+- Shell
+- GUI
+- Networking
+- Sound
+- Graphics
+- User input

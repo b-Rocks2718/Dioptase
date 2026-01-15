@@ -1,5 +1,7 @@
 # ISA:
 
+The [RiSC-16](https://user.eng.umd.edu/~blj/risc/) and its extensions were very helpful for creating this ISA  
+
 32 bit registers, 32 bit instructions, 32 registers (r0 - r31)
 
 Reads from `r0` always return 0, writes to `r0` are ignored. When in kernel mode, all accesses to `r31`
