@@ -13,6 +13,8 @@
 
 ## Stack Frame Structure
 
+Stack pointer and base pointer are expected to stay 4-byte aligned
+
 ```
 addr -> mem
 --------------
