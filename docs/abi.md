@@ -2,7 +2,7 @@
 
 ## Registers
 - `r0`: always zero, enforced by hardware
-- `r1`: return value 
+- `r1-r2`: return value (`r1` only if the value fits in a single register)
 - `r1-r8`: arg0 - arg7, with additional args passed on the stack
 - `r9-r19`: additional caller-saved registers
 - `r20-r27`: callee-saved registers
@@ -75,6 +75,14 @@ In assembly:
     add  sp sp 8       # deallocate ra and bp on stack
     ret
   ```
+
+### Struct conventions
+
+#### Returning structs
+If a struct fits into one register, it is returned in `r1`. If it fits in two, it is returned in `r1` and `r2`. Otherwise, the caller must allocate space for the return value and pass a pointer to the callee in `r1` (shifting other function arguments to the remaining registers).
+
+#### Struct arguments
+If a struct fits into a single register and there is a register available, the struct arguement is passed in that register. If a struct fits into two registers and two registers are available, the struct argument is passed in those two registers. Otherwise the struct is passed on the stack. Arguments that come after the struct will be passed in registers if any remain, regardless of if the struct is passed in registers or on the stack. 
 
 ## Types
 Signed/unsigned versions of each type share the same size.  

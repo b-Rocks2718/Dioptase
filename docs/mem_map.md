@@ -23,10 +23,53 @@ UART RX
 
 ### 0x7FE5804 - 0x7FE5807
 PIT. Write a 32 bit value `n` and the timer will cause
-an interrupt every `n` clock cycles (clock at 100MHz).
+an interrupt every `n` clock cycles (clock at 100MHz).  
+In multicore configurations, the PIT countdown is shared across cores and advanced by core 0 only. Timer interrupts are delivered to all cores.
 
-### 0x7FE58F9 - 0x7FE5AFF
-SD card. 0x7FE5900 - 0x7FE5AFF is a 512 byte buffer for reading and writing. 0x7FE58FA - 0x7FE58FF is a 6 byte buffer used to form a command. When 0x7FE58F9 is written to, the command is sent. Reading 0x7FE58F9 returns `0x01` while the controller is busy and `0x00` once it is idle. SD card sends an interrupt when it is done.
+### 0x7FE58F0 - 0x7FE5907
+SD card 0 DMA engine (no data buffer). DMA is non-atomic and advances 4 bytes per clock tick.
+
+Registers (all 32-bit, little-endian):
+
+- 0x7FE58F0 - 0x7FE58F3: SD_DMA_MEM_ADDR  
+  Physical memory byte address. The low 2 bits are ignored (address is 4-byte aligned).
+- 0x7FE58F4 - 0x7FE58F7: SD_DMA_SD_BLOCK  
+  SD card block address. Each block is 512 bytes.
+- 0x7FE58F8 - 0x7FE58FB: SD_DMA_LEN  
+  Transfer length in bytes. The low 2 bits are ignored (length is rounded down to a multiple of 4).  
+  A length of 0 after truncation is an error.
+- 0x7FE58FC - 0x7FE58FF: SD_DMA_CTRL  
+  bit 0: START (self-clearing; writing 1 starts a transfer)  
+  bit 1: DIR (0 = SD -> RAM, 1 = RAM -> SD)  
+  bit 2: IRQ_EN (raise SD interrupt on completion)  
+  other bits read as 0 and are ignored on write.
+- 0x7FE5900 - 0x7FE5903: SD_DMA_STATUS  
+  bit 0: BUSY  
+  bit 1: DONE (set when transfer completes or is rejected due to error)  
+  bit 2: ERR (set when error code != 0)  
+  Writes to any byte clear DONE and ERR and also clear SD_DMA_ERR. BUSY is unaffected.
+- 0x7FE5904 - 0x7FE5907: SD_DMA_ERR (read-only)  
+  0 = no error  
+  1 = START while BUSY (ERR set, BUSY unchanged, DONE not set)  
+  2 = zero length (after truncation)
+
+Notes:
+- DMA reads/writes physical memory addresses and MMIO side effects apply.
+- Transfers can span multiple SD blocks starting from SD_DMA_SD_BLOCK.
+- SD card 0 interrupt is asserted when a transfer completes and IRQ_EN is set (including completion with ERR).
+
+### 0x7FE5908 - 0x7FE591F
+SD card 1 DMA engine. Register layout and behavior match SD card 0 with the following addresses:
+
+- 0x7FE5908 - 0x7FE590B: SD1_DMA_MEM_ADDR  
+- 0x7FE590C - 0x7FE590F: SD1_DMA_SD_BLOCK  
+- 0x7FE5910 - 0x7FE5913: SD1_DMA_LEN  
+- 0x7FE5914 - 0x7FE5917: SD1_DMA_CTRL  
+- 0x7FE5918 - 0x7FE591B: SD1_DMA_STATUS  
+- 0x7FE591C - 0x7FE591F: SD1_DMA_ERR
+
+Notes:
+- SD card 1 interrupt is asserted when a transfer completes and IRQ_EN is set (including completion with ERR).
 
 ## 0x7FE5B00 - 0x7FE5B3F
 Sprite Coordinates.

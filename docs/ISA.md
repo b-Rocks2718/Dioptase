@@ -368,6 +368,14 @@ Address gets added to PC before it's used
 
 `10101aaaaaccccciiiiiiiiiiiiiiiii` - `swp rA, rC, [i]`  
 
+### adpc
+
+`rA` is destination register, `i` is a 22 bit signed immediate.
+
+does `rA <- pc + i + 4`, converting pc-relative addresses into absolute addresses.
+
+`10110aaaaaiiiiiiiiiiiiiiiiiiiiii` - `adpc rA, i`
+
 ## Privileged Instructions:
 
 Opcode - 11111
@@ -448,9 +456,10 @@ Misaligned pc exception        := 0x84
 Timer interrupt                := 0xF0   
 Keyboard interrupt             := 0xF1  
 UART RX interrupt              := 0xF2  
-SD card interrupt              := 0xF3  
+SD card 0 interrupt            := 0xF3  
 VGA vblank interrupt           := 0xF4  
-IPI interrupt                  := 0xF5
+IPI interrupt                  := 0xF5  
+SD card 1 interrupt            := 0xF6
 ```
 
 #### Interrupt bits in IMR/ISR
@@ -458,9 +467,10 @@ IPI interrupt                  := 0xF5
 Timer interrupt      := 0x00000001  
 Keyboard interrupt   := 0x00000002  
 UART RX interrupt    := 0x00000004    
-SD card interrupt    := 0x00000008  
+SD card 0 interrupt  := 0x00000008  
 VGA vblank interrupt := 0x00000010  
-IPI interrupt        := 0x00000020
+IPI interrupt        := 0x00000020  
+SD card 1 interrupt  := 0x00000040
 ```
 
-Timer interrupt goes to all cores, IPI goes to the cores specified by the instruction. KB, UART, SD, and VGA interrupts are sent to a single core whenever they happen. The core is chosen with a round-robin distribution.
+Timer interrupt goes to all cores, IPI goes to the cores specified by the instruction. KB, UART, SD card 0, SD card 1, and VGA interrupts are sent to a single core whenever they happen. The core is chosen with a round-robin distribution.

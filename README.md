@@ -14,7 +14,7 @@ I/O devices:
  - PS/2 Mouse
  - VGA Monitor
  - PWM Audio
- - SD card storage
+ - SD card storage (will have two of these)
  - UART
  - PIT (Programmable Interrupt Timer)
 
@@ -35,11 +35,10 @@ Pull the updates with `git pull --recurse-submodules`
 - [Assembler](https://github.com/b-Rocks2718/Dioptase-Assembler) (Done)
 - Emulators:
   - [User ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Simple) (Done)
-  - [Full ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Full) (Done except for mouse and audio)
+  - [Full ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Full) (Done except for some I/O devices)
 - Processors:
   - [User ISA Pipeline](https://github.com/b-Rocks2718/Dioptase-Pipe-Simple) (Works on an old version of the ISA, needs updating)
   - [Full ISA Pipeline](https://github.com/b-Rocks2718/Dioptase-Pipe-Full) (In progress)
 - Languages:
   - [C Compiler](https://github.com/b-Rocks2718/Dioptase-C-Compiler) (In progress)
-  - Lox Interpreter (Not yet started)
-- [OS](https://github.com/b-Rocks2718/Dioptase-OS) (Not yet started)
+- [OS](https://github.com/b-Rocks2718/Dioptase-OS) (In progress)
