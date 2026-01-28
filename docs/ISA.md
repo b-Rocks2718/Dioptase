@@ -30,7 +30,7 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `cr10` = MBI (maibox in, data appears here when an IPI happens)  
 `cr11` = MBO (mailbox out, write data here and do an IPI to send the value to another core)  
 
-On interrupt/exception/syscall, top bit of IMR is set to disable further interrupts. The kernel must clear it after saving pc and flags to enable nested interrupts
+On interrupt/exception/syscall, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts
 
 OS page size: 4KB  
 Nexys a7 has 128MiB of memory, so this means we need to map 32 bit addresses to 27 bit addresses.  
