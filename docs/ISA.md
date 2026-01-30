@@ -6,7 +6,8 @@ The [RiSC-16](https://user.eng.umd.edu/~blj/risc/) and its extensions were very 
 
 Reads from `r0` always return 0, writes to `r0` are ignored. When in kernel mode, accesses to `r31`
 alias the `ksp` register by default. While servicing an interrupt or a kernel TLB miss, `r31` aliases
-`isp` instead. The `crmv` instruction always accesses the architectural `r31` and does not use aliases.
+`isp` instead. The interrupt/TLB nesting depth is exposed as a control register (see `cr13`). The
+`crmv` instruction always accesses the architectural `r31` and does not use aliases.
 
 5 bit opcodes, 4 flags (Zero, Sign, Carry, Overflow)
 
@@ -30,9 +31,12 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `cr9` = CID (Read-only core ID register)  
 `cr10` = MBI (maibox in, data appears here when an IPI happens)  
 `cr11` = MBO (mailbox out, write data here and do an IPI to send the value to another core)  
-`cr12` = ISP (interrupt stack pointer, used when handling interrupts or kernel TLB misses)
+`cr12` = ISP (interrupt stack pointer, used when handling interrupts or kernel TLB misses)  
+`cr13` = ISP_DEPTH (interrupt/TLB nesting depth; nonzero means `r31` aliases `isp`)
 
 On interrupt/exception/syscall, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts
+
+`ISP_DEPTH` (`cr13`) increments on interrupt entry and on kernel TLB miss entry, and decrements on `rfi` and `rft`. `rfe` does not change `ISP_DEPTH`. Writes to `cr13` set the nesting depth directly.
 
 OS page size: 4KB  
 Nexys a7 has 128MiB of memory, so this means we need to map 32 bit addresses to 27 bit addresses.  
