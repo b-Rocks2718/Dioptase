@@ -4,8 +4,9 @@ The [RiSC-16](https://user.eng.umd.edu/~blj/risc/) and its extensions were very 
 
 32 bit registers, 32 bit instructions, 32 registers (r0 - r31)
 
-Reads from `r0` always return 0, writes to `r0` are ignored. When in kernel mode, all accesses to `r31`
-actually access the `ksp` register, except for the `crmv` instruction.
+Reads from `r0` always return 0, writes to `r0` are ignored. When in kernel mode, accesses to `r31`
+alias the `ksp` register by default. While servicing an interrupt or a kernel TLB miss, `r31` aliases
+`isp` instead. The `crmv` instruction always accesses the architectural `r31` and does not use aliases.
 
 5 bit opcodes, 4 flags (Zero, Sign, Carry, Overflow)
 
@@ -23,12 +24,13 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `cr3` = IMR (interrupt mask register, enables various interrupts. Top bit enables/disables all interrupts)   
 `cr4` = EPC (exceptional PC, pc is placed here after interrupt, syscall, or exception)  
 `cr5` = FLG (flags register)  
-`cr6` = No special meaning right now    
+`cr6` = EFG (exceptional flags). Flags are placed here when an interrupt, syscall, or exception happens  
 `cr7` = TLB (address is placed here when it causes a TLB miss)  
 `cr8` = KSP (kernel stack pointer, stack is set here on a user -> kernel switch)  
 `cr9` = CID (Read-only core ID register)  
 `cr10` = MBI (maibox in, data appears here when an IPI happens)  
 `cr11` = MBO (mailbox out, write data here and do an IPI to send the value to another core)  
+`cr12` = ISP (interrupt stack pointer, used when handling interrupts or kernel TLB misses)
 
 On interrupt/exception/syscall, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts
 
@@ -71,11 +73,11 @@ Opcode is 00000
 `00000aaaaabbbbbxxxxxxx01110ccccc` - `add  rA, rB, rC`  
 `00000aaaaabbbbbxxxxxxx01111ccccc` - `addc rA, rB, rC` (add with carry)  
 `00000aaaaabbbbbxxxxxxx10000ccccc` - `sub  rA, rB, rC`  
-`00000aaaaabbbbbxxxxxxx10001ccccc` - `subb rA, rB, rC` (subtract with borrow)  
-`00000aaaaaxxxxxxxxxxxx10010ccccc` - `sxtb rA, rC` (sign extend byte)
-`00000aaaaaxxxxxxxxxxxx10011ccccc` - `sxtd rA, rC` (sign extend double)
-`00000aaaaaxxxxxxxxxxxx10100ccccc` - `tncb rA, rC` (truncate to byte)
-`00000aaaaaxxxxxxxxxxxx10101ccccc` - `tncd rA, rC` (truncate to double)
+`00000aaaaabbbbbxxxxxxx10001ccccc` - `subb rA, rB, rC` (subtract with borrow)    
+`00000aaaaaxxxxxxxxxxxx10010ccccc` - `sxtb rA, rC` (sign extend byte)  
+`00000aaaaaxxxxxxxxxxxx10011ccccc` - `sxtd rA, rC` (sign extend double)  
+`00000aaaaaxxxxxxxxxxxx10100ccccc` - `tncb rA, rC` (truncate to byte)  
+`00000aaaaaxxxxxxxxxxxx10101ccccc` - `tncd rA, rC` (truncate to double)  
 
 Plenty of instruction space to expand this over time - floating point stuff will likely be next  
 
@@ -426,8 +428,9 @@ ID - 00010
 ### Return from exception/interrupt
 ID - 00011
 
-`11111xxxxxxxxxx000110xxxxxxxxxxx` - `rfe` - (return from exception) update kmode and jump to EPC  
-`11111xxxxxxxxxx000111xxxxxxxxxxx` - `rfi` - (return from interrupt) update kmode and jump to EPC, and reenable interrupts  
+`11111xxxxxxxxxx000110xxxxxxxxxxx` - `rfe` - (return from exception) update kmode and jump to EPC, set flags to efg  
+`11111xxxxxxxxxx000111xxxxxxxxxxx` - `rfi` - (return from interrupt) update kmode and jump to EPC, set flags to efg, and reenable interrupts  
+`11111xxxxxxxxxx00101xxxxxxxxxxx` - `rft` - (return from kernel TLB miss) update kmode and jump to EPC, set flags to efg  
 
 Leaves lots of unused opcodes, so the ISA can be expanded over time
 
