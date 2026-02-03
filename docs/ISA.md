@@ -30,7 +30,6 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `cr9` = CID (Read-only core ID register)  
 `cr10` = MBI (maibox in, data appears here when an IPI happens)  
 `cr11` = MBO (mailbox out, write data here and do an IPI to send the value to another core)  
-`cr12` = ISA (interrupt save area)  
 
 On interrupt/exception/syscall, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts
 
@@ -439,12 +438,6 @@ ID - 00100
 `11111aaaaaxxxxx001000xxxxxxxxxnn` - `ipi rA, n` - interrupt core n, put success code in rA (1 => success, 0 => failure)  
 
 `11111aaaaaxxxxx001001xxxxxxxxxxx` - `ipi rA, all` - interrupt all other cores, put bitmap of successes in rA
-
-### Store/Load from interrupt save area
-ID - 00101
-
-`11111aaaaa00000001010iiiiiiiiiii` - `sisa rA, [i]` - store to interrupt save area. `mem[cr12 + i] <- rA`  
-`11111aaaaa00000001011iiiiiiiiiii` - `lisa rA, [i]` - load from interrupt save area. `rA <- mem[cr12 + i]`  
 
 ## Exceptions:
 
