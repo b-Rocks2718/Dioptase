@@ -57,9 +57,8 @@ In assembly:
 - function prologue is
   ```
   func:
-    swa  ra [sp, -4]   # put ra on the stack
-    swa  bp [sp, -8]   # put bp on the stack
-    add  sp sp -8       # correct sp
+    push ra            # put ra on the stack
+    push bp            # put bp on the stack
     mov  bp sp          # move bp to new frame
 
     # func body here

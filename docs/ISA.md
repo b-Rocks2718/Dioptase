@@ -5,8 +5,7 @@ The [RiSC-16](https://user.eng.umd.edu/~blj/risc/) and its extensions were very 
 32 bit registers, 32 bit instructions, 32 registers (r0 - r31)
 
 Reads from `r0` always return 0, writes to `r0` are ignored. When in kernel mode, accesses to `r31`
-alias the `ksp` register by default. While servicing an interrupt or a kernel TLB miss, `r31` aliases
-`isp` instead. The interrupt/TLB nesting depth is exposed as a control register (see `cr13`). The
+alias the `ksp` register by default. The
 `crmv` instruction always accesses the architectural `r31` and does not use aliases.
 
 5 bit opcodes, 4 flags (Zero, Sign, Carry, Overflow)
@@ -31,12 +30,9 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `cr9` = CID (Read-only core ID register)  
 `cr10` = MBI (maibox in, data appears here when an IPI happens)  
 `cr11` = MBO (mailbox out, write data here and do an IPI to send the value to another core)  
-`cr12` = ISP (interrupt stack pointer, used when handling interrupts or kernel TLB misses)  
-`cr13` = ISP_DEPTH (interrupt/TLB nesting depth; nonzero means `r31` aliases `isp`)
+`cr12` = ISA (interrupt save area)  
 
 On interrupt/exception/syscall, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts
-
-`ISP_DEPTH` (`cr13`) increments on interrupt entry and on kernel TLB miss entry, and decrements on `rfi` and `rft`. `rfe` does not change `ISP_DEPTH`. Writes to `cr13` set the nesting depth directly.
 
 OS page size: 4KB  
 Nexys a7 has 128MiB of memory, so this means we need to map 32 bit addresses to 27 bit addresses.  
@@ -434,7 +430,6 @@ ID - 00011
 
 `11111xxxxxxxxxx000110xxxxxxxxxxx` - `rfe` - (return from exception) update kmode and jump to EPC, set flags to efg  
 `11111xxxxxxxxxx000111xxxxxxxxxxx` - `rfi` - (return from interrupt) update kmode and jump to EPC, set flags to efg, and reenable interrupts  
-`11111xxxxxxxxxx00101xxxxxxxxxxx` - `rft` - (return from kernel TLB miss) update kmode and jump to EPC, set flags to efg  
 
 Leaves lots of unused opcodes, so the ISA can be expanded over time
 
@@ -444,6 +439,12 @@ ID - 00100
 `11111aaaaaxxxxx001000xxxxxxxxxnn` - `ipi rA, n` - interrupt core n, put success code in rA (1 => success, 0 => failure)  
 
 `11111aaaaaxxxxx001001xxxxxxxxxxx` - `ipi rA, all` - interrupt all other cores, put bitmap of successes in rA
+
+### Store/Load from interrupt save area
+ID - 00101
+
+`11111aaaaa00000001010iiiiiiiiiii` - `sisa rA, [i]` - store to interrupt save area. `mem[cr12 + i] <- rA`  
+`11111aaaaa00000001011iiiiiiiiiii` - `lisa rA, [i]` - load from interrupt save area. `rA <- mem[cr12 + i]`  
 
 ## Exceptions:
 
