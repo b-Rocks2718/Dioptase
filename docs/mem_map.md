@@ -6,11 +6,20 @@ Address range is 0x0000000 - 0x7FFFFFF
 Interrupt Vector Table
 
 ### 0x0000400 - ....
-Kernel init. PC will be initialized to 0x00400 on startup
+BIOS init. PC will be initialized to 0x00400 on startup
+
+## 0x7FBD000 - 0x7FBD257F
+Tile framebuffer (tile entries).  
+Two bytes per tile entry in an 80x60 grid (640x480 with 8x8 tiles).  
+Lower byte: tile index.  
+Upper byte: tile color (8-bit).  
+The tile framebuffer is composited on top of the pixel framebuffer.  
+Tile pixels with color 0xFXXX are transparent (12-bit RGB stored in a 16-bit entry).  
+Tile pixels with color 0xCXXX are replaced by the tile color byte (currently interpreted as RGB332 and expanded to 12-bit RGB in the emulator).  
 
 ## 0x7FC0000 - 0x7FE57FF
-Framebuffer. The plan is to use 640x480 mode for the VGA, but actually do 320x240 resolution.  
-320x240x2 = 0x25800 bytes. The graphics hardware can also be set to a tile mode with 8x8 tiles  
+Pixel framebuffer. 320x240 resolution, 16-bit little-endian pixels (0x0RGB, 12-bit color).  
+This layer is drawn first and appears underneath the tile framebuffer.
 
 ### 0x7FE5800 - 0x7FE5801
 PS/2 keyboard input stream (0 if nothing, otherwise ASCII)
@@ -26,29 +35,29 @@ PIT. Write a 32 bit value `n` and the timer will cause
 an interrupt every `n` clock cycles (clock at 100MHz).  
 In multicore configurations, the PIT countdown is shared across cores and advanced by core 0 only. Timer interrupts are delivered to all cores.
 
-### 0x7FE58F0 - 0x7FE5907
+### 0x7FE5810 - 0x7FE5827
 SD card 0 DMA engine (no data buffer). DMA is non-atomic and advances 4 bytes per clock tick.
 
 Registers (all 32-bit, little-endian):
 
-- 0x7FE58F0 - 0x7FE58F3: SD_DMA_MEM_ADDR  
+- 0x7FE5810 - 0x7FE5813: SD_DMA_MEM_ADDR  
   Physical memory byte address. The low 2 bits are ignored (address is 4-byte aligned).
-- 0x7FE58F4 - 0x7FE58F7: SD_DMA_SD_BLOCK  
+- 0x7FE5814 - 0x7FE5817: SD_DMA_SD_BLOCK  
   SD card block address. Each block is 512 bytes.
-- 0x7FE58F8 - 0x7FE58FB: SD_DMA_LEN  
+- 0x7FE5818 - 0x7FE581B: SD_DMA_LEN  
   Transfer length in bytes. The low 2 bits are ignored (length is rounded down to a multiple of 4).  
   A length of 0 after truncation is an error.
-- 0x7FE58FC - 0x7FE58FF: SD_DMA_CTRL  
+- 0x7FE581C - 0x7FE581F: SD_DMA_CTRL  
   bit 0: START (self-clearing; writing 1 starts a transfer)  
   bit 1: DIR (0 = SD -> RAM, 1 = RAM -> SD)  
   bit 2: IRQ_EN (raise SD interrupt on completion)  
   other bits read as 0 and are ignored on write.
-- 0x7FE5900 - 0x7FE5903: SD_DMA_STATUS  
+- 0x7FE5820 - 0x7FE5823: SD_DMA_STATUS  
   bit 0: BUSY  
   bit 1: DONE (set when transfer completes or is rejected due to error)  
   bit 2: ERR (set when error code != 0)  
   Writes to any byte clear DONE and ERR and also clear SD_DMA_ERR. BUSY is unaffected.
-- 0x7FE5904 - 0x7FE5907: SD_DMA_ERR (read-only)  
+- 0x7FE5824 - 0x7FE5827: SD_DMA_ERR (read-only)  
   0 = no error  
   1 = START while BUSY (ERR set, BUSY unchanged, DONE not set)  
   2 = zero length (after truncation)
@@ -58,15 +67,15 @@ Notes:
 - Transfers can span multiple SD blocks starting from SD_DMA_SD_BLOCK.
 - SD card 0 interrupt is asserted when a transfer completes and IRQ_EN is set (including completion with ERR).
 
-### 0x7FE5908 - 0x7FE591F
+### 0x7FE5828 - 0x7FE583F
 SD card 1 DMA engine. Register layout and behavior match SD card 0 with the following addresses:
 
-- 0x7FE5908 - 0x7FE590B: SD1_DMA_MEM_ADDR  
-- 0x7FE590C - 0x7FE590F: SD1_DMA_SD_BLOCK  
-- 0x7FE5910 - 0x7FE5913: SD1_DMA_LEN  
-- 0x7FE5914 - 0x7FE5917: SD1_DMA_CTRL  
-- 0x7FE5918 - 0x7FE591B: SD1_DMA_STATUS  
-- 0x7FE591C - 0x7FE591F: SD1_DMA_ERR
+- 0x7FE5828 - 0x7FE582B: SD1_DMA_MEM_ADDR  
+- 0x7FE582C - 0x7FE582F: SD1_DMA_SD_BLOCK  
+- 0x7FE5830 - 0x7FE5833: SD1_DMA_LEN  
+- 0x7FE5834 - 0x7FE5837: SD1_DMA_CTRL  
+- 0x7FE5838 - 0x7FE583B: SD1_DMA_STATUS  
+- 0x7FE583C - 0x7FE583F: SD1_DMA_ERR
 
 Notes:
 - SD card 1 interrupt is asserted when a transfer completes and IRQ_EN is set (including completion with ERR).
@@ -78,16 +87,25 @@ Sprite 1 `x` coordinate at 0x7FE5B04, and so on up to sprite 15.
 Each `x`, `y` pair stores the coordinate of the bottom left corner of the sprite.
 
 ## 0x7FE5B40 - 0x7FE5B41
-Horizontal scroll register (in pixels)
+Tile horizontal scroll register (in pixels)
 
 ## 0x7FE5B42 - 0x7FE5B43
-Vertical scroll register (in pixels)
+Tile vertical scroll register (in pixels)
 
 ## 0x7FE5B44
-Scale register (all screen items are displayed at 2\*\*n)
+Tile scale register (tile layer pixels are displayed at 2\*\*n)
 
-## 0x7FE5B45
-Graphics mode register (0 => tile mode, 1 => pixel mode)
+## 0x7FE5B50 - 0x7FE5B51
+Pixel horizontal scroll register (in pixels)
+
+## 0x7FE5B52 - 0x7FE5B53
+Pixel vertical scroll register (in pixels)
+
+## 0x7FE5B54
+Pixel scale register (pixel layer pixels are displayed at 2\*\*n)
+
+## 0x7FE5B60 - 0x7FE5B6F
+Sprite scale registers (one byte per sprite, 2\*\*n scaling)
 
 ## 0x7FE5B46
 VGA status register (Read-only)  
@@ -104,7 +122,9 @@ increments once per frame
 Clock divider register
 
 ## 0x7FE8000 - 0x7FEFFFF
-Tilemap. Each tile is 8x8 pixels, 1 pixel takes 2 bytes, and we reserve space for 256
+Tilemap. Each tile is 8x8 pixels, 1 pixel takes 2 bytes (16-bit little-endian, 0x0RGB).  
+Pixels with 0xFXXX are transparent when drawn via the tile framebuffer.  
+We reserve space for 256 tiles.
 
 ## 0x7FF0000 - 0x7FF7FFF
 Sprite data. Each sprite is 32x32 pixels, and we reserve space for 16.

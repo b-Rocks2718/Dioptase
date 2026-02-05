@@ -448,19 +448,19 @@ All exceptions, interrupts, and syscalls cause the processor to enter kernel mod
 #### Index into interrupt vector table
 
 ```
-sys EXIT                       := 0x01  
-Invalid instruction exception  := 0x80  
-Privileges exception           := 0x81  
-Tlb umiss exception            := 0x82  
-Tlb kmiss exception            := 0x83  
-Misaligned pc exception        := 0x84  
-Timer interrupt                := 0xF0   
-Keyboard interrupt             := 0xF1  
-UART RX interrupt              := 0xF2  
-SD card 0 interrupt            := 0xF3  
-VGA vblank interrupt           := 0xF4  
-IPI interrupt                  := 0xF5  
-SD card 1 interrupt            := 0xF6
+sys EXIT                       := 0x01 (0x004)
+Invalid instruction exception  := 0x80 (0x200)
+Privileges exception           := 0x81 (0x204)
+Tlb umiss exception            := 0x82 (0x208)
+Tlb kmiss exception            := 0x83 (0x20C)
+Misaligned pc exception        := 0x84 (0x210)
+Timer interrupt                := 0xF0 (0x3C0)
+Keyboard interrupt             := 0xF1 (0x3C4)
+UART RX interrupt              := 0xF2 (0x3C8)
+SD card 0 interrupt            := 0xF3 (0x3CC)
+VGA vblank interrupt           := 0xF4 (0x3D0)
+IPI interrupt                  := 0xF5 (0x3D4)
+SD card 1 interrupt            := 0xF6 (0x3D8)
 ```
 
 #### Interrupt bits in IMR/ISR
