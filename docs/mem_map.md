@@ -87,19 +87,19 @@ Sprite 1 `x` coordinate at 0x7FE5B04, and so on up to sprite 15.
 Each `x`, `y` pair stores the coordinate of the bottom left corner of the sprite.
 
 ## 0x7FE5B40 - 0x7FE5B41
-Tile horizontal scroll register (in pixels)
+Tile horizontal scroll register (in pixels, signed 16-bit little-endian)
 
 ## 0x7FE5B42 - 0x7FE5B43
-Tile vertical scroll register (in pixels)
+Tile vertical scroll register (in pixels, signed 16-bit little-endian)
 
 ## 0x7FE5B44
 Tile scale register (tile layer pixels are displayed at 2\*\*n)
 
 ## 0x7FE5B50 - 0x7FE5B51
-Pixel horizontal scroll register (in pixels)
+Pixel horizontal scroll register (in pixels, signed 16-bit little-endian)
 
 ## 0x7FE5B52 - 0x7FE5B53
-Pixel vertical scroll register (in pixels)
+Pixel vertical scroll register (in pixels, signed 16-bit little-endian)
 
 ## 0x7FE5B54
 Pixel scale register (pixel layer pixels are displayed at 2\*\*n)
