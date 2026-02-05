@@ -124,6 +124,7 @@ Clock divider register
 ## 0x7FE8000 - 0x7FEFFFF
 Tilemap. Each tile is 8x8 pixels, 1 pixel takes 2 bytes (16-bit little-endian, 0x0RGB).  
 Pixels with 0xFXXX are transparent when drawn via the tile framebuffer.  
+Pixels with 0xCXXX are the color that is stored with the tile in the framebuffer.
 We reserve space for 256 tiles.
 
 ## 0x7FF0000 - 0x7FF7FFF
