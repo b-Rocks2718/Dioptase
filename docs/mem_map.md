@@ -102,7 +102,7 @@ Pixel horizontal scroll register (in pixels, signed 16-bit little-endian)
 Pixel vertical scroll register (in pixels, signed 16-bit little-endian)
 
 ## 0x7FE5B54
-Pixel scale register (pixel layer pixels are displayed at 2\*\*n)
+Pixel scale register (pixel layer pixels are displayed at 2\*\*(n+1))
 
 ## 0x7FE5B60 - 0x7FE5B6F
 Sprite scale registers (one byte per sprite, 2\*\*n scaling)
