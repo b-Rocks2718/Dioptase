@@ -349,7 +349,7 @@ Opcode is 10011
 
 `rA` is destination reg, `rC` is data, `rB` is base, `i` is 12 bit immediate, sign extended to 32 bits
 
-`10011aaaaabbbbbccccciiiiiiiiiiii` - `swpa rA, rC, [rB, i]`  
+`10011aaaaacccccbbbbbiiiiiiiiiiii` - `swpa rA, rC, [rB, i]`  
 
 #### Swap (PC-Relative Addressing):  
 Opcode is 10100
@@ -358,7 +358,7 @@ Opcode is 10100
 
 Address gets added to PC before it's used
 
-`10100aaaaabbbbbccccciiiiiiiiiiii` - `swp rA, rC, [rB, i]`  
+`10100aaaaacccccbbbbbiiiiiiiiiiii` - `swp rA, rC, [rB, i]`  
 
 #### Swap (PC-Relative Addressing, immediate):  
 Opcode is 10101
