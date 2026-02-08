@@ -398,6 +398,8 @@ TLB reads and writes concatenate the value in the PID register to the key
 
 #### TLB Structure
 
+The TLB has 16 entries.
+
 A TLB entry looks like this: `PID (32 bits) | VPN (20 bits) || PPN (15 bits) | Flags (12 bits)`  
 The part to the left of the `||` is the key, the part on the right is the value.
 
