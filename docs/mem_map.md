@@ -8,7 +8,7 @@ Interrupt Vector Table
 ### 0x0000400 - ....
 BIOS init. PC will be initialized to 0x00400 on startup
 
-## 0x7FBD000 - 0x7FBD257F
+## 0x7FBD000 - 0x7FBF57F
 Tile framebuffer (tile entries).  
 Two bytes per tile entry in an 80x60 grid (640x480 with 8x8 tiles).  
 Lower byte: tile index.  
@@ -118,7 +118,7 @@ VGA frame count register (Read-only)
 increments once per frame  
 @ 60Hz this takes > 2 years to overflow
 
-## 7FE5B4C - 7FE5B4F
+## 0x7FE5B4C - 0x7FE5B4F
 Clock divider register
 
 ## 0x7FE8000 - 0x7FEFFFF
@@ -129,4 +129,4 @@ We reserve space for 256 tiles.
 
 ## 0x7FF0000 - 0x7FF7FFF
 Sprite data. Each sprite is 32x32 pixels, and we reserve space for 16.
-If there's an overlap, the higher sprite will appear on top (sprite 7 over sprite 0).
+If there's an overlap, the higher sprite will appear on top (sprite 15 over sprite 0).

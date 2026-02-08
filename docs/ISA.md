@@ -370,6 +370,7 @@ Address gets added to PC before it's used
 `10101aaaaaccccciiiiiiiiiiiiiiiii` - `swp rA, rC, [i]`  
 
 ### adpc
+Opcode is 10110
 
 `rA` is destination register, `i` is a 22 bit signed immediate.
 
