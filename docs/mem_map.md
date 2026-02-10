@@ -36,7 +36,7 @@ an interrupt every `n` clock cycles (clock at 100MHz).
 In multicore configurations, the PIT countdown is shared across cores and advanced by core 0 only. Timer interrupts are delivered to all cores.
 
 ### 0x7FE5810 - 0x7FE5827
-SD card 0 DMA engine (no data buffer). DMA is non-atomic and advances 4 bytes per clock tick.
+SD card 0 DMA engine. DMA is non-atomic and advances 4 bytes per clock tick.
 
 Registers (all 32-bit, little-endian):
 
@@ -45,25 +45,29 @@ Registers (all 32-bit, little-endian):
 - 0x7FE5814 - 0x7FE5817: SD_DMA_SD_BLOCK  
   SD card block address. Each block is 512 bytes.
 - 0x7FE5818 - 0x7FE581B: SD_DMA_LEN  
-  Transfer length in bytes. The low 2 bits are ignored (length is rounded down to a multiple of 4).  
+  Transfer length in blocks.
   A length of 0 after truncation is an error.
 - 0x7FE581C - 0x7FE581F: SD_DMA_CTRL  
   bit 0: START (self-clearing; writing 1 starts a transfer)  
   bit 1: DIR (0 = SD -> RAM, 1 = RAM -> SD)  
-  bit 2: IRQ_EN (raise SD interrupt on completion)  
+  bit 2: IRQ_EN (raise SD interrupt on completion)
+  bit 3: SD_INIT (self-clearing; writing 1 initializes sd card)  
   other bits read as 0 and are ignored on write.
 - 0x7FE5820 - 0x7FE5823: SD_DMA_STATUS  
   bit 0: BUSY  
-  bit 1: DONE (set when transfer completes or is rejected due to error)  
+  bit 1: DONE (set when transfer/init completes or is rejected due to error)  
   bit 2: ERR (set when error code != 0)  
   Writes to any byte clear DONE and ERR and also clear SD_DMA_ERR. BUSY is unaffected.
 - 0x7FE5824 - 0x7FE5827: SD_DMA_ERR (read-only)  
   0 = no error  
-  1 = START while BUSY (ERR set, BUSY unchanged, DONE not set)  
-  2 = zero length (after truncation)
+  1 = START or SD_INIT while BUSY (ERR set, BUSY unchanged, DONE not set)  
+  2 = zero length
+  3 = DMA START before successful SD_INIT
 
 Notes:
 - DMA reads/writes physical memory addresses and MMIO side effects apply.
+- SD_INIT uses the same BUSY/DONE/ERR state machine as DMA.
+- DMA START requires a successful SD_INIT after reset.
 - Transfers can span multiple SD blocks starting from SD_DMA_SD_BLOCK.
 - SD card 0 interrupt is asserted when a transfer completes and IRQ_EN is set (including completion with ERR).
 
