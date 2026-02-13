@@ -23,6 +23,10 @@ This layer is drawn first and appears underneath the tile framebuffer.
 
 ### 0x7FE5800 - 0x7FE5801
 PS/2 keyboard input stream (0 if nothing, otherwise ASCII)
+Notes:
+- Key make events return ASCII in the low byte.
+- Key release events set bit 8 (value `0x0100`) in the returned 16-bit word.
+- Enter is encoded as carriage return (`0x0D`).
 
 ### 0x7FE5802
 UART TX
@@ -36,7 +40,7 @@ an interrupt every `n` clock cycles (clock at 100MHz).
 In multicore configurations, the PIT countdown is shared across cores and advanced by core 0 only. Timer interrupts are delivered to all cores.
 
 ### 0x7FE5810 - 0x7FE5827
-SD card 0 DMA engine. DMA is non-atomic and advances 4 bytes per clock tick.
+SD card 0 DMA engine.
 
 Registers (all 32-bit, little-endian):
 
@@ -66,6 +70,10 @@ Registers (all 32-bit, little-endian):
 
 Notes:
 - DMA reads/writes physical memory addresses and MMIO side effects apply.
+- DMA is non-atomic.
+- Each completed memory beat transfers 4 bytes.
+- A memory beat completes when the memory/cache fabric returns a completion handshake.
+  This is not guaranteed to happen every clock tick.
 - SD_INIT uses the same BUSY/DONE/ERR state machine as DMA.
 - DMA START requires a successful SD_INIT after reset.
 - Transfers can span multiple SD blocks starting from SD_DMA_SD_BLOCK.

@@ -306,6 +306,9 @@ If tests exist for the modified behavior:
 
 If no tests exist for the modified behavior:
 - Codex should suggest appropriate tests and where they should live.
+
+Note: for the full pipeline, test with `make test-verilator` instead of `make test`.  
+The verilator testing runs much faster. Also keep in mind that the full emulator can be used to generate the ground-truth behavior for any test case.
   
 ---
 
@@ -326,6 +329,9 @@ If Codex encounters a failing test:
   - Clearly justify the change
 
 ---
+
+## Debugging rules
+When starting to debug a complex problem, make a debugging/[issue].md file to note down important discoveries, and experiments tried/results. This is to avoid duplicate work. If you are working on an ongoing bug, check to see if there is an existing file in the debugging folder with info on things that have previously been tried.
 
 ## HDL / Verilog Rules (if applicable)
 
