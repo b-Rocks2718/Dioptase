@@ -67,6 +67,9 @@ Registers (all 32-bit, little-endian):
   1 = START or SD_INIT while BUSY (ERR set, BUSY unchanged, DONE not set)  
   2 = zero length
   3 = DMA START before successful SD_INIT
+  4 = SD init command/response failure (timeout or invalid response)
+  5 = SD read block failure (timeout, missing data token/payload, or bad response)
+  6 = SD write block failure (timeout or SD data-response reject)
 
 Notes:
 - DMA reads/writes physical memory addresses and MMIO side effects apply.
