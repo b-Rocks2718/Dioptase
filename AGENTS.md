@@ -154,7 +154,7 @@ Commenting requirements depend on the part of the codebase:
 (Applies to paths matching: Dioptase-OS/, Dioptase-CPUs/)
 
 - Extremely careful and explicit comments are required.
-- All non-trivial functions must document:
+- All stuff that messes with threading must document:
   - Preconditions and postconditions
   - Invariants
   - CPU state assumptions (mode, interrupts, MMU, core count)
@@ -171,10 +171,13 @@ Commenting requirements depend on the part of the codebase:
 ### Test Code
 (Applies to paths matching: tests/)
 
-- Minimal comments are preferred, unless the test complexity justifies detailed comments
+- Assembler/Compiler/Emulator tests: Minimal comments are preferred, unless the test complexity justifies detailed comments
+- OS/kernel tests: should have more detailed comments, especially when concurrency is involved
 - Comments should explain:
   - What behavior is being tested
   - Why the test exists (especially for edge cases)
+  - How the test works
+- Have summary in block comment at the top
 - Do not comment obvious assertions or boilerplate.
 
 ## ABI & Calling Conventions
@@ -257,19 +260,6 @@ are forbidden unless explicitly justified.
 
 ---
 
-## Code Documentation Requirements
-
-- All non-trivial code must be commented.
-- Comments must explain **why**, not just **what**.
-- Every function, struct, class, module, or HDL block must include:
-  - Purpose
-  - Inputs and outputs
-  - Important invariants or assumptions
-
-Large additions must include a top-level design comment.
-
----
-
 ## Proactive Review & Quality Enforcement
 
 Codex must actively review existing code and documentation.
@@ -297,6 +287,8 @@ When modifying or adding code, Codex must:
   - `make test`
   - `cargo test`
 - Run the relevent command BEFORE and AFTER any changes
+- For non-OS code, all tests should be run
+- For OS code, tests are slow, so a relevent subset should be chosen to be run
 
 If the modification broke previously working tests:
 - Codex must revise its changes or explain why it needs to break existing tests
