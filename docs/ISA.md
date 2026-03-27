@@ -31,6 +31,9 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `cr10` = MBI (maibox in, data appears here when an IPI happens)  
 `cr11` = MBO (mailbox out, write data here and do an IPI to send the value to another core)  
 
+`ISR` (`cr2`) is read-only to `crmv`; software must use `eoi` to acknowledge
+interrupts.
+
 On interrupt/exception/syscall, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts
 
 OS page size: 4KB  
@@ -441,6 +444,16 @@ ID - 00100
 `11111aaaaaxxxxx001000xxxxxxxxxnn` - `ipi rA, n` - interrupt core n, put success code in rA (1 => success, 0 => failure)  
 
 `11111aaaaaxxxxx001001xxxxxxxxxxx` - `ipi rA, all` - interrupt all other cores, put bitmap of successes in rA
+
+### End of interrupt instruction
+ID - 00101
+
+`11111xxxxxxxxxx001010xxxxxxxnnnn` - `eoi n` - Clear bit `n` of ISR register  
+
+`11111xxxxxxxxxx001011xxxxxxxxxxx` - `eoi all` - Clear all bits of ISR register
+
+`eoi` is atomic with respect to interrupt delivery: interrupts that become
+pending in the same window remain visible in `ISR`.
 
 ## Exceptions:
 
