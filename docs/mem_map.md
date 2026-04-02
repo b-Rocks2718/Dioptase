@@ -99,7 +99,7 @@ Notes:
 Sprite Coordinates.
 Sprite 0 `x` coordinate at 0x7FE5B00 and 0x7FE5B01, `y` coordinate at 0x7FE5B02 and 0x7FE5B03,  
 Sprite 1 `x` coordinate at 0x7FE5B04, and so on up to sprite 15.
-Each `x`, `y` pair stores the coordinate of the bottom left corner of the sprite.
+Each `x`, `y` pair stores the coordinate of the top left corner of the sprite.
 
 ## 0x7FE5B40 - 0x7FE5B41
 Tile horizontal scroll register (in pixels, signed 16-bit little-endian)
@@ -145,3 +145,5 @@ We reserve space for 256 tiles.
 ## 0x7FF0000 - 0x7FF7FFF
 Sprite data. Each sprite is 32x32 pixels, and we reserve space for 16.
 If there's an overlap, the higher sprite will appear on top (sprite 15 over sprite 0).
+Sprite pixels use packed 12-bit color in the same `0x0BGR` format as the tile
+and pixel framebuffers. Pixels with `0xFXXX` are transparent.
