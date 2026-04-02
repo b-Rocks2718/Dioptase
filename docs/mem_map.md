@@ -14,11 +14,11 @@ Two bytes per tile entry in an 80x60 grid (640x480 with 8x8 tiles).
 Lower byte: tile index.  
 Upper byte: tile color (8-bit).  
 The tile framebuffer is composited on top of the pixel framebuffer.  
-Tile pixels with color 0xFXXX are transparent (12-bit RGB stored in a 16-bit entry).  
-Tile pixels with color 0xCXXX are replaced by the tile color byte (currently interpreted as RGB332 and expanded to 12-bit RGB in the emulator).  
+Tile pixels with color 0xFXXX are transparent. Opaque tile pixels use packed 12-bit color with red in bits [3:0], green in bits [7:4], and blue in bits [11:8] (`0x0BGR` when written as hex nibbles).  
+Tile pixels with color 0xCXXX are replaced by the tile color byte (currently interpreted as RGB332 and expanded to the same packed 12-bit format).  
 
 ## 0x7FC0000 - 0x7FE57FF
-Pixel framebuffer. 320x240 resolution, 16-bit little-endian pixels (0x0RGB, 12-bit color).  
+Pixel framebuffer. 320x240 resolution, 16-bit little-endian pixels (`0x0BGR`, 12-bit color: red in bits [3:0], green in [7:4], blue in [11:8]).  
 This layer is drawn first and appears underneath the tile framebuffer.
 
 ### 0x7FE5800 - 0x7FE5801
@@ -137,7 +137,7 @@ increments once per frame
 Clock divider register
 
 ## 0x7FE8000 - 0x7FEFFFF
-Tilemap. Each tile is 8x8 pixels, 1 pixel takes 2 bytes (16-bit little-endian, 0x0RGB).  
+Tilemap. Each tile is 8x8 pixels, 1 pixel takes 2 bytes (16-bit little-endian, opaque colors stored as `0x0BGR`).  
 Pixels with 0xFXXX are transparent when drawn via the tile framebuffer.  
 Pixels with 0xCXXX are the color that is stored with the tile in the framebuffer.
 We reserve space for 256 tiles.
