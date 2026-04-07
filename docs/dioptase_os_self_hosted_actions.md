@@ -60,12 +60,15 @@ compiler before cleaning and running the OS release tests:
 
 ```sh
 make -C Dioptase-OS clean
-make -C Dioptase-OS -j16 --output-sync=target test VERSION=release TEST_RUNS="$DIOPTASE_OS_TEST_RUNS"
+make -C Dioptase-OS -j16 --output-sync=target VERSION=release TEST_RUNS="$DIOPTASE_OS_TEST_RUNS" <test>.fail ...
 ```
 
-The `-j16` option lets GNU Make run up to 16 independent OS summary-test
-targets at once. `--output-sync=target` keeps each test target's output grouped
-so parallel logs remain readable.
+The workflow expands `Dioptase-OS/tests/*.ok` into matching `<test>.fail`
+targets. The `.fail` target stops each test at the first failing repetition, so
+the uploaded `.raw`, `.out`, and `.out.dir` artifacts preserve the failing run
+instead of a later passing run. The `-j16` option lets GNU Make run up to 16
+independent OS targets at once. `--output-sync=target` keeps each test target's
+output grouped so parallel logs remain readable.
 
 The compiler's optional WACC targets are not included because this checkout does
 not currently include `tests/writing-a-c-compiler-tests/test_compiler`.
@@ -170,16 +173,16 @@ host awake instead of failing the test job's final sleep step.
 
 ## CI Failure Semantics
 
-`Dioptase-OS/Makefile` currently prints failing summaries such as
-`[heap_test] fail: ...` without making the aggregate `make test` command return
-a non-zero status. The workflow therefore scans the aggregate log and fails the
-job if any summary line starts with `[name] fail:`.
+`Dioptase-OS/Makefile` currently lets `<test>.fail` targets print per-run
+failures such as `[heap_test] run 3/50: fail` without returning a non-zero
+status. The workflow therefore scans the OS log and fails the job if any per-run
+line reports `fail`.
 
 `Dioptase-Assembler` and `Dioptase-Languages/Dioptase-C-Compiler` also print
 `Summary: passed / total tests passed` lines, so the workflow fails those jobs
 when `passed != total` even if `make` exits 0.
 
-The summary-scanning wrappers should be removed if those Makefile aggregate
+The summary/per-run scanning wrappers should be removed if those Makefile
 targets are later changed to return non-zero on any failing baseline.
 
 ## References

@@ -152,7 +152,7 @@ jobs:
             Dioptase-Languages/Dioptase-C-Compiler/tests/debug_info/*.s
 
   os-tests:
-    name: Dioptase OS release aggregate test suite
+    name: Dioptase OS release failure-preserving test suite
     runs-on:
       - self-hosted
       - linux
@@ -239,9 +239,22 @@ jobs:
           rebuild_release_dependency "Dioptase-OS clean" \
             make -C Dioptase-OS clean
 
+          os_fail_targets=()
+          for ok in Dioptase-OS/tests/*.ok; do
+            if [ -e "$ok" ]; then
+              test_name="${ok##*/}"
+              os_fail_targets+=("${test_name%.ok}.fail")
+            fi
+          done
+
+          if [ "${#os_fail_targets[@]}" -eq 0 ]; then
+            echo "No Dioptase OS tests with .ok baselines were found under Dioptase-OS/tests." >&2
+            exit 1
+          fi
+
           echo "::group::Dioptase-OS release tests"
           set -o pipefail
-          make -C Dioptase-OS -j16 --output-sync=target test VERSION=release TEST_RUNS="$DIOPTASE_OS_TEST_RUNS" 2>&1 | tee -a "$DIOPTASE_OS_TEST_LOG"
+          make -C Dioptase-OS -j16 --output-sync=target VERSION=release TEST_RUNS="$DIOPTASE_OS_TEST_RUNS" "${os_fail_targets[@]}" 2>&1 | tee -a "$DIOPTASE_OS_TEST_LOG"
           make_status=${PIPESTATUS[0]}
           echo "::endgroup::"
           if [ "$make_status" -ne 0 ]; then
@@ -249,8 +262,8 @@ jobs:
             exit "$make_status"
           fi
 
-          if grep -E '^\[[^]]+\] fail:' "$DIOPTASE_OS_TEST_LOG"; then
-            echo "Dioptase OS test summaries reported at least one failing baseline." >&2
+          if grep -E '^\[[^]]+\] run [0-9]+/[0-9]+: fail' "$DIOPTASE_OS_TEST_LOG"; then
+            echo "Dioptase OS .fail targets reported at least one failing baseline." >&2
             exit 1
           fi
 
