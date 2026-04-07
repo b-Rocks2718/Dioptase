@@ -135,6 +135,7 @@ jobs:
             make -C Dioptase-Languages/Dioptase-C-Compiler clean
           run_command "Dioptase-C-Compiler release" \
             make -C Dioptase-Languages/Dioptase-C-Compiler release
+          export DIOPTASE_ROOT="$GITHUB_WORKSPACE"
           run_summary_make Dioptase-Languages/Dioptase-C-Compiler test-release
 
       - name: Upload failure logs

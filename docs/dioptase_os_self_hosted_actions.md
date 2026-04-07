@@ -48,7 +48,7 @@ cargo build --release --manifest-path Dioptase-Emulators/Dioptase-Emulator-Full/
 cargo test --release --manifest-path Dioptase-Emulators/Dioptase-Emulator-Full/Cargo.toml
 make -C Dioptase-Languages/Dioptase-C-Compiler clean
 make -C Dioptase-Languages/Dioptase-C-Compiler release
-make -C Dioptase-Languages/Dioptase-C-Compiler test-release
+DIOPTASE_ROOT="$PWD" make -C Dioptase-Languages/Dioptase-C-Compiler test-release
 ```
 
 The `os-tests` job also rebuilds the release assembler, full emulator, and
