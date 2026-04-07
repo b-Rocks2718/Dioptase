@@ -240,7 +240,7 @@ jobs:
 
           echo "::group::Dioptase-OS release tests"
           set -o pipefail
-          make -C Dioptase-OS test VERSION=release TEST_RUNS="$DIOPTASE_OS_TEST_RUNS" 2>&1 | tee -a "$DIOPTASE_OS_TEST_LOG"
+          make -C Dioptase-OS -j16 --output-sync=target test VERSION=release TEST_RUNS="$DIOPTASE_OS_TEST_RUNS" 2>&1 | tee -a "$DIOPTASE_OS_TEST_LOG"
           make_status=${PIPESTATUS[0]}
           echo "::endgroup::"
           if [ "$make_status" -ne 0 ]; then

@@ -56,8 +56,12 @@ compiler before cleaning and running the OS release tests:
 
 ```sh
 make -C Dioptase-OS clean
-make -C Dioptase-OS test VERSION=release TEST_RUNS="$DIOPTASE_OS_TEST_RUNS"
+make -C Dioptase-OS -j16 --output-sync=target test VERSION=release TEST_RUNS="$DIOPTASE_OS_TEST_RUNS"
 ```
+
+The `-j16` option lets GNU Make run up to 16 independent OS summary-test
+targets at once. `--output-sync=target` keeps each test target's output grouped
+so parallel logs remain readable.
 
 The compiler's optional WACC targets are not included because this checkout does
 not currently include `tests/writing-a-c-compiler-tests/test_compiler`.
