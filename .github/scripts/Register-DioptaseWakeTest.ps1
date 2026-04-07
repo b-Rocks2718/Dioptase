@@ -1,12 +1,13 @@
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
     [ValidateNotNullOrEmpty()]
-    [string]$TaskName = "Dioptase OS Tests Wake",
+    [string]$TaskName = "Dioptase Wake Test",
+
+    [ValidateRange(1, 1440)]
+    [int]$MinutesFromNow = 3,
 
     [ValidateNotNullOrEmpty()]
-    [string[]]$Times = @("09:55", "21:55"),
-
-    [string]$WslDistro = "",
+    [string]$WslDistro = "Ubuntu",
 
     [string]$WslUser = "root",
 
@@ -33,6 +34,7 @@ if ($WslCommand.Contains('"')) {
     throw 'WslCommand must not contain double quotes. Put complex runner startup logic in a WSL-side script and call that script here.'
 }
 
+$wakeAt = (Get-Date).AddMinutes($MinutesFromNow)
 $wslDistroLiteral = $WslDistro.Replace("'", "''")
 $wslUserLiteral = $WslUser.Replace("'", "''")
 $wslCommandLiteral = $WslCommand.Replace("'", "''")
@@ -77,47 +79,30 @@ try {
 
 $encodedWakeScript = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($wakeScript))
 
-$timeFormats = [string[]]@("H:mm", "HH:mm", "h:mm tt", "hh:mm tt")
-$triggers = foreach ($time in $Times) {
-    try {
-        $parsed = [datetime]::ParseExact(
-            $time,
-            $timeFormats,
-            [Globalization.CultureInfo]::InvariantCulture,
-            [Globalization.DateTimeStyles]::None)
-    } catch {
-        throw "Invalid wake time '$time'. Expected HH:mm, for example 06:05 or 18:05."
-    }
-
-    New-ScheduledTaskTrigger -Daily -At ([datetime]::Today.Add($parsed.TimeOfDay))
-}
-
 $action = New-ScheduledTaskAction `
     -Execute "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" `
     -Argument "-NoProfile -ExecutionPolicy Bypass -EncodedCommand $encodedWakeScript"
+
+$trigger = New-ScheduledTaskTrigger -Once -At $wakeAt
 
 $settings = New-ScheduledTaskSettingsSet `
     -WakeToRun `
     -StartWhenAvailable `
     -MultipleInstances IgnoreNew
 
-$description = "Wake Windows before the scheduled Dioptase OS GitHub Actions self-hosted runner job. The task does not run the OS tests."
+$description = "One-time Dioptase wake test. Wakes Windows, starts WSL, and holds the host awake briefly so GitHub Actions can assign queued work."
 $task = New-ScheduledTask `
     -Action $action `
-    -Trigger $triggers `
+    -Trigger $trigger `
     -Settings $settings `
     -Description $description
 
-if ($PSCmdlet.ShouldProcess($TaskName, "register scheduled wake task")) {
+if ($PSCmdlet.ShouldProcess($TaskName, "register one-time wake test task")) {
     Register-ScheduledTask -TaskName $TaskName -InputObject $task -Force:$Force | Out-Null
 
-    $joinedTimes = $Times -join ", "
-    Write-Host "Registered '$TaskName' to wake Windows daily at: $joinedTimes."
-    if ([string]::IsNullOrWhiteSpace($WslDistro)) {
-        Write-Host "No WSL distro was configured; the task only wakes Windows."
-    } else {
-        Write-Host "The task will start WSL distro '$WslDistro' as user '$WslUser' with command: $WslCommand"
-    }
+    Write-Host "Registered '$TaskName' to wake Windows at: $($wakeAt.ToString('yyyy-MM-dd HH:mm:ss'))."
+    Write-Host "The task will start WSL distro '$WslDistro' as user '$WslUser' with command: $WslCommand"
     Write-Host "The task will request that Windows stay awake for $AwakeSeconds seconds after wake."
     Write-Host "Verify pending wake timers with: powercfg /waketimers"
+    Write-Host "Clean up this one-time task with: Unregister-ScheduledTask -TaskName '$TaskName' -Confirm:`$false"
 }

@@ -32,7 +32,9 @@ schedule:
 ```
 
 The Windows wake task defaults to 09:55 and 21:55, which gives the host about
-10 minutes to wake, reconnect networking, and bring the runner online.
+10 minutes to wake, reconnect networking, and bring the runner online. After
+wake, the task also asks Windows to stay awake for 20 minutes so the host does
+not go back to sleep before GitHub assigns the queued job.
 
 ## Test Coverage
 
@@ -106,13 +108,29 @@ Replace `Ubuntu` with the actual WSL distro name from:
 wsl.exe -l -v
 ```
 
-The default task only wakes the host and starts the WSL distro with `true`. If
-your runner service needs an explicit WSL-side command, pass it with
-`-WslCommand`. Keep complex startup logic in a WSL-side script so Task Scheduler
-quoting stays simple:
+The default task wakes the host, restarts the GitHub runner systemd service as
+WSL `root`, and asks Windows to stay awake for 20 minutes. Restarting the runner
+service clears stale GitHub sessions after sleep:
 
 ```sh
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w .github/scripts/Register-DioptaseWakeTask.ps1)" -WslDistro Ubuntu -WslCommand "/home/brooks/bin/start-dioptase-runner" -Force
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w .github/scripts/Register-DioptaseWakeTask.ps1)" -WslDistro Ubuntu -Force
+```
+
+If your runner service name changes, pass the new command with `-WslCommand`.
+Keep complex startup logic in a WSL-side script so Task Scheduler quoting stays
+simple. Pass `-WslUser` if the command should run as a WSL user other than
+`root`.
+
+To change the post-wake keep-awake window, pass `-AwakeSeconds`:
+
+```sh
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w .github/scripts/Register-DioptaseWakeTask.ps1)" -WslDistro Ubuntu -AwakeSeconds 1800 -Force
+```
+
+For a one-time wake test three minutes from now, use:
+
+```sh
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w .github/scripts/Register-DioptaseWakeTest.ps1)" -Force
 ```
 
 Check the registered wake timers from Windows PowerShell or WSL:
