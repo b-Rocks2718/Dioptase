@@ -10,31 +10,33 @@ Dioptase architectural behavior.
 ## Design
 
 - GitHub Actions owns the test job and records the result.
-- Windows Task Scheduler wakes the machine before the GitHub Actions schedule.
+- GitHub Actions schedules the run before the Windows wake task, so the run is
+  already queued when the machine wakes.
+- Windows Task Scheduler wakes the machine after the GitHub Actions schedule.
 - A Linux self-hosted runner, normally inside WSL, runs the toolchain and OS tests.
 - A final workflow job suspends the Windows host after all scheduled test jobs finish.
 - The workflow has no `pull_request` trigger because self-hosted runners should
   not execute untrusted fork code.
 
-GitHub cannot wake a sleeping self-hosted runner by itself. The runner must be
-awake and connected before the scheduled job can be picked up.
+GitHub cannot wake a sleeping self-hosted runner by itself. This setup lets the
+scheduled run wait in GitHub's queue until Windows wakes the host and the runner
+reconnects.
 
 ## Schedule
 
 The workflow is in `.github/workflows/dioptase-os-tests.yml`.
 
-It runs at 10:05 and 22:05 in `America/Chicago` time:
+It is scheduled at 09:25 and 21:25 in `America/Chicago` time:
 
 ```yaml
 schedule:
-  - cron: "5 10,22 * * *"
+  - cron: "25 9,21 * * *"
     timezone: America/Chicago
 ```
 
-The Windows wake task defaults to 09:55 and 21:55, which gives the host about
-10 minutes to wake, reconnect networking, and bring the runner online. After
-wake, the task also asks Windows to stay awake for 20 minutes so the host does
-not go back to sleep before GitHub assigns the queued job.
+The Windows wake task defaults to 09:55 and 21:55, about 30 minutes after the
+GitHub schedule. After wake, the task asks Windows to stay awake for 20 minutes
+so the host does not go back to sleep before GitHub assigns the queued job.
 
 ## Test Coverage
 
