@@ -41,7 +41,7 @@ jobs:
         shell: bash
 
     env:
-      DIOPTASE_TOOLCHAIN_TEST_LOG: ${{ runner.temp }}/dioptase-toolchain-tests.log
+      DIOPTASE_TOOLCHAIN_TEST_LOG: .dioptase-ci-logs/dioptase-toolchain-tests.log
 
     steps:
       - name: Check out repository
@@ -115,6 +115,7 @@ jobs:
             fi
           }
 
+          mkdir -p "$(dirname "$DIOPTASE_TOOLCHAIN_TEST_LOG")"
           : > "$DIOPTASE_TOOLCHAIN_TEST_LOG"
 
           run_command "Dioptase-Assembler clean" \
@@ -143,7 +144,7 @@ jobs:
           name: dioptase-toolchain-test-logs
           if-no-files-found: ignore
           path: |
-            ${{ runner.temp }}/dioptase-toolchain-tests.log
+            .dioptase-ci-logs/dioptase-toolchain-tests.log
             Dioptase-Assembler/tests/**/*.hex
             Dioptase-Assembler/tests/**/*.debug
             Dioptase-Languages/Dioptase-C-Compiler/tests/**/*.out
@@ -164,7 +165,7 @@ jobs:
 
     env:
       DIOPTASE_OS_TEST_RUNS: ${{ github.event.inputs.test_runs || '10' }}
-      DIOPTASE_OS_TEST_LOG: ${{ runner.temp }}/dioptase-os-tests.log
+      DIOPTASE_OS_TEST_LOG: .dioptase-ci-logs/dioptase-os-tests.log
 
     steps:
       - name: Check out repository
@@ -219,6 +220,7 @@ jobs:
             fi
           }
 
+          mkdir -p "$(dirname "$DIOPTASE_OS_TEST_LOG")"
           : > "$DIOPTASE_OS_TEST_LOG"
 
           rebuild_release_dependency "Dioptase-Assembler clean" \
@@ -258,7 +260,7 @@ jobs:
           name: dioptase-os-test-logs
           if-no-files-found: ignore
           path: |
-            ${{ runner.temp }}/dioptase-os-tests.log
+            .dioptase-ci-logs/dioptase-os-tests.log
             Dioptase-OS/tests/*.raw
             Dioptase-OS/tests/*.out
             Dioptase-OS/tests/*.out.dir/**
