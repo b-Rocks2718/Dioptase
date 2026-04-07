@@ -42,3 +42,5 @@ Pull the updates with `git pull --recurse-submodules`
 - Languages:
   - [C Compiler](https://github.com/b-Rocks2718/Dioptase-C-Compiler) (Good enough for now)
 - [OS](https://github.com/b-Rocks2718/Dioptase-OS) (In progress)
+
+[![Dioptase Tests](https://github.com/b-Rocks2718/Dioptase/actions/workflows/dioptase-os-tests.yml/badge.svg?branch=main)](https://github.com/b-Rocks2718/Dioptase/actions/workflows/dioptase-os-tests.yml)
