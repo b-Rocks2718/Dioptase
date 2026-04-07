@@ -25,7 +25,7 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `cr4` = EPC (exceptional PC, pc is placed here after interrupt, syscall, or exception)  
 `cr5` = FLG (flags register)  
 `cr6` = EFG (exceptional flags). Flags are placed here when an interrupt, syscall, or exception happens  
-`cr7` = TLB (address is placed here when it causes a TLB miss)  
+`cr7` = TLB (VPN is placed here when it causes a TLB miss)  
 `cr8` = KSP (kernel stack pointer, stack is set here on a user -> kernel switch)  
 `cr9` = CID (Read-only core ID register)  
 `cr10` = MBI (maibox in, data appears here when an IPI happens)  

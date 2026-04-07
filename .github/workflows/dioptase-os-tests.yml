@@ -6,7 +6,7 @@ on:
       test_runs:
         description: "Number of repetitions for each baseline-checked OS test."
         required: true
-        default: "10"
+        default: "50"
       sleep_after:
         description: "Suspend the Windows host after this manual run."
         type: choice
@@ -165,7 +165,7 @@ jobs:
         shell: bash
 
     env:
-      DIOPTASE_OS_TEST_RUNS: ${{ github.event.inputs.test_runs || '10' }}
+      DIOPTASE_OS_TEST_RUNS: ${{ github.event.inputs.test_runs || '50' }}
       DIOPTASE_OS_TEST_LOG: .dioptase-ci-logs/dioptase-os-tests.log
 
     steps:
