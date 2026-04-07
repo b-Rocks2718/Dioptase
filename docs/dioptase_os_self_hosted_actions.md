@@ -130,11 +130,18 @@ set to `true`.
 To temporarily disable automatic sleep for scheduled runs without editing the
 workflow, set the repository variable `DIOPTASE_SLEEP_AFTER_TESTS` to `false`.
 
-The suspend helper waits 120 seconds before calling the Windows power API so
-GitHub Actions has time to flush final logs:
+The suspend helper schedules a detached PowerShell process that waits 120 seconds
+before calling the Windows power API. The helper returns immediately so GitHub
+Actions can record the sleep job as complete before the host suspends:
 
 ```sh
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w .github/scripts/Suspend-Windows.ps1)" -DryRun
+```
+
+For manual debugging, pass `-Synchronous` to use the old blocking behavior:
+
+```sh
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w .github/scripts/Suspend-Windows.ps1)" -DelaySeconds 5 -Synchronous
 ```
 
 If that command fails with `Exec format error`, WSL interop is disabled or
