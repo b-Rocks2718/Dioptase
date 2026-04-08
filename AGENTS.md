@@ -94,7 +94,7 @@ struct TCB {
 };
 ```
 
-Nested interrupts are prevented because interrupts are disabled when an interrupt happens. They are reenabled when the interrupted thread context switches to a thread that should have interrupts enabled (by updating IMR), or when the interrupt handler returns (with an rfi instruction).
+Nested interrupts are prevented because interrupts are disabled when an interrupt happens. They are reenabled when the interrupted thread context switches to a thread that should have interrupts enabled (by updating IMR), or when a trap handler returns with `rfe`.
 
 Context switching from within the pit handler is possible without messing up the threads interrupt state by saving the imr in the thread state.
 

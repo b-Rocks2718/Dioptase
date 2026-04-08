@@ -34,7 +34,7 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `ISR` (`cr2`) is read-only to `crmv`; software must use `eoi` to acknowledge
 interrupts.
 
-On interrupt/exception/syscall, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts
+On interrupt/exception/syscall, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts.
 
 OS page size: 4KB  
 Nexys a7 has 128MiB of memory, so this means we need to map 32 bit addresses to 27 bit addresses.  
@@ -311,13 +311,13 @@ Opcode is 01111
 
 List will expand as we go
 
-i is 8 bit immediate specifying which exception to raise
+i is an 8 bit immediate specifying which syscall to invoke
 
 `01111xxxxxxxxxxxxxxxxxxxiiiiiiii`
 
 For now, we’ll start with supporting
 
-`01111xxxxxxxxxxxxxxxxxxx00000000` - `sys EXIT`, returning control from the user code to the OS
+`01111xxxxxxxxxxxxxxxxxxx00000001` - `sys EXIT`, returning control from the user code to the OS
 
 ### Atomics
 
@@ -430,11 +430,10 @@ ID - 00010
 `11111xxxxxxxxxx0001001xxxxxxxxxx` - `mode sleep` - (awakened by interrupt)  
 `11111xxxxxxxxxx0001010xxxxxxxxxx` - `mode halt` - (only way to exit is reset)
 
-### Return from exception/interrupt
+### Return from trap
 ID - 00011
 
-`11111xxxxxxxxxx000110xxxxxxxxxxx` - `rfe` - (return from exception) update kmode and jump to EPC, set flags to efg  
-`11111xxxxxxxxxx000111xxxxxxxxxxx` - `rfi` - (return from interrupt) update kmode and jump to EPC, set flags to efg, and reenable interrupts  
+`11111xxxxxxxxxx000110xxxxxxxxxxx` - `rfe` - return from trap, update kmode and jump to EPC, set flags to efg, and reenable interrupts. The alternate bit-11 encoding is reserved and must raise invalid instruction.  
 
 Leaves lots of unused opcodes, so the ISA can be expanded over time
 
@@ -458,6 +457,7 @@ pending in the same window remain visible in `ISR`.
 ## Exceptions:
 
 All exceptions, interrupts, and syscalls cause the processor to enter kernel mode and jump to the address specified in the interrupt vector table (IVT).
+Trap entry snapshots `EPC`/`EFG` and clears `IMR[31]` before software can re-enable nested interrupts. Syscall handlers therefore begin with global interrupts disabled, just like interrupt and exception handlers.
 
 ### Exception types:
 
