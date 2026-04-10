@@ -25,11 +25,12 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `cr4` = EPC (exceptional PC, pc is placed here after interrupt, syscall, or exception)  
 `cr5` = FLG (flags register)  
 `cr6` = EFG (exceptional flags). Flags are placed here when an interrupt, syscall, or exception happens  
-`cr7` = TLB (VPN is placed here when it causes a TLB miss)  
+`cr7` = TLBA (VPN is placed here when it causes a TLB miss)  
 `cr8` = KSP (kernel stack pointer, stack is set here on a user -> kernel switch)  
 `cr9` = CID (Read-only core ID register)  
 `cr10` = MBI (maibox in, data appears here when an IPI happens)  
 `cr11` = MBO (mailbox out, write data here and do an IPI to send the value to another core)  
+`cr12` = TLBF (TLB fault flags. Set on a TLB exception to the failing permission bits, or 0 when no TLB entry matched)  
 
 `ISR` (`cr2`) is read-only to `crmv`; software must use `eoi` to acknowledge
 interrupts.
@@ -412,6 +413,14 @@ U - user (if set, this entry becomes valid in user mode)
 X - executable  
 W - writable  
 R - readable   
+
+On a TLB exception, `cr12` (`TLBF`) stores the subset of required access bits that were missing from the selected entry:
+
+- read fault: bit 0 (`0x1`)
+- write fault: bit 1 (`0x2`)
+- execute fault: bit 2 (`0x4`)
+- user access to a kernel-only mapping: bit 3 (`0x8`)
+- true miss with no matching TLB entry: `0x0`
 
 `tlbr rA, rB` will use the PID and `(rB & 0xFFFFF000)` as a key and put the value in `rA`  
 `tlbw rA, rB` will use the PID and `(rB & 0xFFFFF000)` as a key and store `(rA & 0x7FFFFFF)` as the value in the TLB
