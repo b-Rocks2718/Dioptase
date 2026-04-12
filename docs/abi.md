@@ -11,6 +11,23 @@
 - `r30`: base pointer
 - `r31`: stack pointer 
 
+## Trap ABI
+
+The `trap` instruction uses a similar ABI to normal function calls:
+
+- `r1`: trap code
+- `r2-r8`: trap handler arguments
+- `r9-r19`: additional caller-saved registers
+- `r20-r31`: callee-saved registers
+
+For now, trap calls are limited to 7 scalar arguments. 
+
+Currently defined trap codes:
+
+- `0` (`exit`): `r2` carries the 32-bit exit status value
+
+If a trap handler has a return value, it uses the same convention as a function call (usually `r1` is the return value, with exceptions for returning structs)
+
 ## Stack Frame Structure
 
 Stack pointer and base pointer are expected to stay 4-byte aligned

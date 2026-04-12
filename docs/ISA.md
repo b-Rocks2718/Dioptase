@@ -22,9 +22,9 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `cr1` = PID (holds PID of currently executing process, used as key by TLB)  
 `cr2` = ISR (interrupt status register, holds which interrupts are active)  
 `cr3` = IMR (interrupt mask register, enables various interrupts. Top bit enables/disables all interrupts)   
-`cr4` = EPC (exceptional PC, pc is placed here after interrupt, syscall, or exception)  
+`cr4` = EPC (exceptional PC, pc is placed here after interrupt, trap, or exception)  
 `cr5` = FLG (flags register)  
-`cr6` = EFG (exceptional flags). Flags are placed here when an interrupt, syscall, or exception happens  
+`cr6` = EFG (exceptional flags). Flags are placed here when an interrupt, trap, or exception happens  
 `cr7` = TLBA (VPN is placed here when it causes a TLB miss)  
 `cr8` = KSP (kernel stack pointer, stack is set here on a user -> kernel switch)  
 `cr9` = CID (Read-only core ID register)  
@@ -35,7 +35,7 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `ISR` (`cr2`) is read-only to `crmv`; software must use `eoi` to acknowledge
 interrupts.
 
-On interrupt/exception/syscall, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts.
+On interrupt/exception/trap, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts.
 
 OS page size: 4KB  
 Nexys a7 has 128MiB of memory, so this means we need to map 32 bit addresses to 27 bit addresses.  
@@ -306,19 +306,20 @@ If condition is met, branches to rB + pc + 4 and stores pc + 4 in rA (set rA as 
 `0111010001xxxxxxxxxxxxaaaaabbbbb` - `bb rA, rB`   (branch if below [unsigned])  
 `0111010010xxxxxxxxxxxxaaaaabbbbb` - `bbe rA, rB`  (branch if below or equal [unsigned]) 
 
-### Syscalls
+### Trap Instruction
 
 Opcode is 01111
 
-List will expand as we go
+The instruction itself carries no operands. Software selects the operation
+through the trap ABI:
 
-i is an 8 bit immediate specifying which syscall to invoke
+- `r1` = trap code
+- `r2-r8` = trap-specific arguments
 
-`01111xxxxxxxxxxxxxxxxxxxiiiiiiii`
+`01111000000000000000000000000000` - `trap`
 
-For now, we’ll start with supporting
-
-`01111xxxxxxxxxxxxxxxxxxx00000001` - `sys EXIT`, returning control from the user code to the OS
+The current software-defined trap codes are:
+- `0`: `exit`
 
 ### Atomics
 
@@ -465,19 +466,18 @@ pending in the same window remain visible in `ISR`.
 
 ## Exceptions:
 
-All exceptions, interrupts, and syscalls cause the processor to enter kernel mode and jump to the address specified in the interrupt vector table (IVT).
-Trap entry snapshots `EPC`/`EFG` and clears `IMR[31]` before software can re-enable nested interrupts. Syscall handlers therefore begin with global interrupts disabled, just like interrupt and exception handlers.
+All exceptions, interrupts, and trap instructions cause the processor to enter kernel mode and jump to the address specified in the interrupt vector table (IVT).
+Trap entry snapshots `EPC`/`EFG` and clears `IMR[31]` before software can re-enable nested interrupts. Trap handlers therefore begin with global interrupts disabled, just like interrupt and exception handlers.
 
 ### Exception types:
 
 #### Index into interrupt vector table
 
 ```
-sys EXIT                       := 0x01 (0x004)
+Trap instruction               := 0x01 (0x004)
 Invalid instruction exception  := 0x80 (0x200)
 Privileges exception           := 0x81 (0x204)
-Tlb umiss exception            := 0x82 (0x208)
-Tlb kmiss exception            := 0x83 (0x20C)
+Tlb miss exception             := 0x82 (0x208)
 Misaligned pc exception        := 0x84 (0x210)
 Timer interrupt                := 0xF0 (0x3C0)
 Keyboard interrupt             := 0xF1 (0x3C4)
