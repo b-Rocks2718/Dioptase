@@ -46,7 +46,7 @@ bp-8 -> local 2
 sp   -> local n
 ```
 
-First 8 args are passed in r1-r8, remaining args are pushed in reverse order. ra is pushed, bp is pushed, bp is replaced with the current sp, and the call instruction places the return address in r31. The result is that arguments are above the new bp, and local variables are below it. 
+First 8 args are passed in r1-r8, remaining args are pushed in reverse order. ra is pushed, bp is pushed, bp is replaced with the current sp, and the call instruction places the return address in r29. The result is that arguments are above the new bp, and local variables are below it. 
 
 In assembly:
 
