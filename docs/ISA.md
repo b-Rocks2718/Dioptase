@@ -486,6 +486,7 @@ SD card 0 interrupt            := 0xF3 (0x3CC)
 VGA vblank interrupt           := 0xF4 (0x3D0)
 IPI interrupt                  := 0xF5 (0x3D4)
 SD card 1 interrupt            := 0xF6 (0x3D8)
+Audio interrupt                := 0xF7 (0x3DC)
 ```
 
 #### Interrupt bits in IMR/ISR
@@ -496,7 +497,8 @@ UART RX interrupt    := 0x00000004
 SD card 0 interrupt  := 0x00000008  
 VGA vblank interrupt := 0x00000010  
 IPI interrupt        := 0x00000020  
-SD card 1 interrupt  := 0x00000040
+SD card 1 interrupt  := 0x00000040  
+Audio interrupt      := 0x00000080
 ```
 
-Timer interrupt goes to all cores, IPI goes to the cores specified by the instruction. KB, UART, SD card 0, SD card 1, and VGA interrupts are sent to a single core whenever they happen. The core is chosen with a round-robin distribution.
+Timer interrupt goes to all cores, IPI goes to the cores specified by the instruction. KB, UART, SD card 0, SD card 1, VGA, and audio interrupts are sent to a single core whenever they happen. The core is chosen with a round-robin distribution.

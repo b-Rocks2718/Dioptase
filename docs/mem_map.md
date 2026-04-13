@@ -8,6 +8,18 @@ Interrupt Vector Table
 ### 0x0000400 - ....
 BIOS init. PC will be initialized to 0x00400 on startup
 
+## 0x7FB8000 - 0x7FBBBFF
+Audio output ring buffer. Fixed-size 16 KiB device-owned storage exposed through MMIO.
+
+Notes:
+- This region stores the PCM bytes consumed by the audio device configured through the `AUDIO_*` registers.
+- The ring buffer base address is fixed at `0x7FB8000` and the ring size is fixed at `0x4000` bytes.
+- The region is byte-addressable MMIO storage, not ordinary RAM.
+- Software writes PCM sample bytes into this region and then advances `AUDIO_WRITE_IDX` to publish them to hardware.
+
+## 0x7FBC000 - 0x7FBCFFF
+Currently unmapped MMIO space reserved for future use.
+
 ## 0x7FBD000 - 0x7FBF57F
 Tile framebuffer (tile entries).  
 Two bytes per tile entry in an 80x60 grid (640x480 with 8x8 tiles).  
@@ -94,6 +106,37 @@ SD card 1 DMA engine. Register layout and behavior match SD card 0 with the foll
 
 Notes:
 - SD card 1 interrupt is asserted when a transfer completes and IRQ_EN is set (including completion with ERR).
+
+### 0x7FE5840 - 0x7FE5853
+Audio output control block.
+
+Registers (all 32-bit, little-endian):
+
+- 0x7FE5840 - 0x7FE5843: AUDIO_CTRL  
+  bit 0: ENABLE (1 = consume PCM data from the audio ring buffer, 0 = halt consumption and output silence)  
+  bit 1: IRQ_EN (enable the audio interrupt while `AUDIO_STATUS.IRQ_PENDING` is 1)  
+  bit 2: CLEAR_UNDERRUN (self-clearing; writing 1 clears `AUDIO_STATUS.UNDERRUN`)  
+  other bits read as 0 and are ignored on write.
+- 0x7FE5844 - 0x7FE5847: AUDIO_STATUS (read-only)  
+  bit 0: ENABLED (mirror of `AUDIO_CTRL.ENABLE`)  
+  bit 1: LOW_WATER (set when buffered audio bytes are less than or equal to `AUDIO_WATERMARK`)  
+  bit 2: UNDERRUN (sticky; set when playback is enabled and the device needs another sample while the buffer is empty)  
+  bit 3: IRQ_PENDING (set when `LOW_WATER` or `UNDERRUN` is set)  
+  other bits read as 0.
+- 0x7FE5848 - 0x7FE584B: AUDIO_WRITE_IDX  
+  Software-owned producer byte index into the audio ring buffer. The device consumes bytes starting at `AUDIO_READ_IDX` up to, but not including, `AUDIO_WRITE_IDX`, wrapping at the end of the ring.
+- 0x7FE584C - 0x7FE584F: AUDIO_READ_IDX (read-only)  
+  Hardware-owned consumer byte index into the audio ring buffer. The device advances this register by 2 for each 16-bit sample consumed.
+- 0x7FE5850 - 0x7FE5853: AUDIO_WATERMARK  
+  Watermark in buffered bytes. `LOW_WATER` becomes 1 when the number of buffered bytes is less than or equal to this value.
+
+Notes:
+- The audio format is fixed at signed 16-bit little-endian mono PCM at 25,000 samples per second.
+- `AUDIO_WRITE_IDX`, `AUDIO_READ_IDX`, and `AUDIO_WATERMARK` are byte counts, but audio samples are 16-bit. Software should keep them 2-byte aligned.
+- `AUDIO_READ_IDX == AUDIO_WRITE_IDX` means the buffer is empty.
+- To avoid ambiguity between empty and full, software must leave at least one 16-bit sample unused in the ring buffer.
+- The audio interrupt is level-triggered while `AUDIO_CTRL.IRQ_EN` and `AUDIO_STATUS.IRQ_PENDING` are both 1.
+- On underrun, the device outputs signed-zero samples (`0x0000`), leaves `AUDIO_READ_IDX` unchanged while the buffer is empty, and resumes playback automatically after software writes more data and advances `AUDIO_WRITE_IDX`.
 
 ## 0x7FE5B00 - 0x7FE5B3F
 Sprite Coordinates.
