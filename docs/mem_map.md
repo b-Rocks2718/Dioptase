@@ -114,14 +114,13 @@ Registers (all 32-bit, little-endian):
 
 - 0x7FE5840 - 0x7FE5843: AUDIO_CTRL  
   bit 0: ENABLE (1 = consume PCM data from the audio ring buffer, 0 = halt consumption and output silence)  
-  bit 1: IRQ_EN (enable the audio interrupt while `AUDIO_STATUS.IRQ_PENDING` is 1)  
-  bit 2: CLEAR_UNDERRUN (self-clearing; writing 1 clears `AUDIO_STATUS.UNDERRUN`)  
+  bit 1: IRQ_EN (enable low-water interrupt delivery)  
   other bits read as 0 and are ignored on write.
 - 0x7FE5844 - 0x7FE5847: AUDIO_STATUS (read-only)  
   bit 0: ENABLED (mirror of `AUDIO_CTRL.ENABLE`)  
   bit 1: LOW_WATER (set when buffered audio bytes are less than or equal to `AUDIO_WATERMARK`)  
-  bit 2: UNDERRUN (sticky; set when playback is enabled and the device needs another sample while the buffer is empty)  
-  bit 3: IRQ_PENDING (set when `LOW_WATER` or `UNDERRUN` is set)  
+  bit 2: UNDERRUN (set when playback is enabled and the device needs another sample while the buffer is empty; clears automatically when playback is disabled or software publishes at least one full sample again)  
+  bit 3: IRQ_PENDING (set when `LOW_WATER` is set)  
   other bits read as 0.
 - 0x7FE5848 - 0x7FE584B: AUDIO_WRITE_IDX  
   Software-owned producer byte index into the audio ring buffer. The device consumes bytes starting at `AUDIO_READ_IDX` up to, but not including, `AUDIO_WRITE_IDX`, wrapping at the end of the ring.
@@ -135,7 +134,9 @@ Notes:
 - `AUDIO_WRITE_IDX`, `AUDIO_READ_IDX`, and `AUDIO_WATERMARK` are byte counts, but audio samples are 16-bit. Software should keep them 2-byte aligned.
 - `AUDIO_READ_IDX == AUDIO_WRITE_IDX` means the buffer is empty.
 - To avoid ambiguity between empty and full, software must leave at least one 16-bit sample unused in the ring buffer.
-- The audio interrupt is level-triggered while `AUDIO_CTRL.IRQ_EN` and `AUDIO_STATUS.IRQ_PENDING` are both 1.
+- The audio interrupt is edge-triggered on the `LOW_WATER` transition from `0` to `1` while `AUDIO_CTRL.IRQ_EN` is `1`.
+- Enabling `IRQ_EN` while `LOW_WATER` is already `1` does not synthesize an interrupt; software must observe the current status directly in that case.
+- `UNDERRUN` is status-only and does not raise an interrupt.
 - On underrun, the device outputs signed-zero samples (`0x0000`), leaves `AUDIO_READ_IDX` unchanged while the buffer is empty, and resumes playback automatically after software writes more data and advances `AUDIO_WRITE_IDX`.
 
 ## 0x7FE5B00 - 0x7FE5B3F
