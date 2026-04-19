@@ -318,8 +318,9 @@ through the trap ABI:
 
 `01111000000000000000000000000000` - `trap`
 
-The current software-defined trap codes are:
-- `0`: `exit`
+Specific trap codes are software-defined by the running environment. The current
+Dioptase-OS trap and syscall code assignments are documented in
+`Dioptase-OS/docs/syscalls.md`.
 
 ### Atomics
 

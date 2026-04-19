@@ -22,9 +22,9 @@ The `trap` instruction uses a similar ABI to normal function calls:
 
 For now, trap calls are limited to 7 scalar arguments. 
 
-Currently defined trap codes:
-
-- `0` (`exit`): `r2` carries the 32-bit exit status value
+Trap codes are software-defined by the running environment rather than the ISA
+or ABI itself. The current Dioptase-OS trap and syscall code assignments are
+documented in `Dioptase-OS/docs/syscalls.md`.
 
 If a trap handler has a return value, it uses the same convention as a function call (usually `r1` is the return value, with exceptions for returning structs)
 
