@@ -34,11 +34,40 @@ Pixel framebuffer. 320x240 resolution, 16-bit little-endian pixels (`0x0BGR`, 12
 This layer is drawn first and appears underneath the tile framebuffer.
 
 ### 0x7FE5800 - 0x7FE5801
-PS/2 keyboard input stream (0 if nothing, otherwise ASCII)
+PS/2 keyboard input stream (0 if nothing, otherwise guest key event)
 Notes:
-- Key make events return ASCII in the low byte.
-- Key release events set bit 8 (value `0x0100`) in the returned 16-bit word.
-- Enter is encoded as carriage return (`0x0D`).
+- Key make events return a guest keycode in the low byte.
+- Key release events set bit 8 (value `0x0100`) in the returned 16-bit word and
+  preserve the same low-byte guest keycode as the corresponding make event.
+- Printable keys use the unshifted base-key ASCII identity in the low byte:
+  letters are lowercase ASCII, the number row is `'0'` .. `'9'`, and punctuation
+  uses the unshifted base key (`'-'`, `'='`, `'['`, `']'`, `'\\'`, `';'`,
+  apostrophe, grave accent, `','`, `'.'`, `'/'`, and space).
+- Control keys that already have standard ASCII control bytes keep those values:
+  Backspace = `0x08`, Tab = `0x09`, Enter = `0x0D`, Escape = `0x1B`, Delete =
+  `0x7F`.
+- Modifiers use distinct left/right keycodes:
+  - Left Ctrl = `0xE0`
+  - Left Shift = `0xE1`
+  - Left Alt = `0xE2`
+  - Right Ctrl = `0xE4`
+  - Right Shift = `0xE5`
+  - Right Alt = `0xE6`
+- Common non-printable keys use a reserved keycode range so they do not collide
+  with printable ASCII:
+  - Insert = `0x80`
+  - Home = `0x81`
+  - Page Up = `0x82`
+  - End = `0x83`
+  - Page Down = `0x84`
+  - Right = `0x85`
+  - Left = `0x86`
+  - Down = `0x87`
+  - Up = `0x88`
+  - F1 = `0x90` through F12 = `0x9B`
+- Numeric keypad digits/operators may be normalized by the input frontend to
+  the corresponding base guest keycodes. Distinct numpad-only guest codes are
+  currently unspecified.
 
 ### 0x7FE5802
 UART TX
