@@ -19,12 +19,6 @@ on:
         options:
           - "false"
           - "true"
-  push:
-    branches:
-      - '**'
-  pull_request:
-    branches:
-      - main
 
 concurrency:
   group: dioptase-tests-branch-${{ github.head_ref || github.ref_name }}
