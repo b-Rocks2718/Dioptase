@@ -1,0 +1,72 @@
+name: Dioptase OS Tests (Branch)
+
+on:
+  workflow_dispatch:
+    inputs:
+      os_branch:
+        description: "Branch of Dioptase-OS subrepo to test"
+        required: true
+        type: string
+      test_runs:
+        description: "Number of repetitions for each baseline-checked OS test."
+        required: true
+        default: "50"
+      sleep_after:
+        description: "Suspend the Windows host after this manual run."
+        type: choice
+        required: true
+        default: "false"
+        options:
+          - "false"
+          - "true"
+
+concurrency:
+  group: dioptase-tests-branch-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  os-tests-branch:
+    uses: ./.github/workflows/dioptase-os-tests-reusable.yml
+    with:
+      os_branch: ${{ github.event.inputs.os_branch || github.head_ref || github.ref_name }}
+      test_runs: ${{ github.event.inputs.test_runs || '50' }}
+      artifact_name: branch
+
+  sleep-host:
+    name: Suspend Windows host
+    needs:
+      - os-tests-branch
+    if: ${{ always() && !cancelled() && vars.DIOPTASE_SLEEP_AFTER_TESTS != 'false' && github.event.inputs.sleep_after == 'true' }}
+    runs-on:
+      - self-hosted
+      - linux
+      - x64
+      - dioptase-os
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Suspend Windows host
+        run: |
+          script_path="$GITHUB_WORKSPACE/.github/scripts/Suspend-Windows.ps1"
+
+          if ! command -v powershell.exe >/dev/null 2>&1 || ! command -v wslpath >/dev/null 2>&1; then
+            echo "Windows PowerShell interop is not available from this runner; leaving the host awake." >&2
+            exit 0
+          fi
+
+          if ! powershell.exe -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' >/dev/null 2>&1; then
+            echo "Windows PowerShell was found but could not execute from this runner; leaving the host awake." >&2
+            exit 0
+          fi
+
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w "$script_path")" -DelaySeconds 120
