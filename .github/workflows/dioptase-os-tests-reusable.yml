@@ -44,8 +44,8 @@ jobs:
         if: ${{ inputs.os_branch != '' }}
         run: |
           cd Dioptase-OS
-          git fetch origin "${{ inputs.os_branch }}"
-          git checkout "${{ inputs.os_branch }}"
+          git fetch origin "${{ inputs.os_branch }}:refs/remotes/origin/${{ inputs.os_branch }}"
+          git checkout -B "${{ inputs.os_branch }}" "origin/${{ inputs.os_branch }}"
 
       - name: Check host dependencies
         run: |
