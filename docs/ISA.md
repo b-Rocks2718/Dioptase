@@ -453,7 +453,13 @@ ID - 00100
 
 `11111aaaaaxxxxx001000xxxxxxxxxnn` - `ipi rA, n` - interrupt core n, put success code in rA (1 => success, 0 => failure)  
 
-`11111aaaaaxxxxx001001xxxxxxxxxxx` - `ipi rA, all` - interrupt all other cores, put bitmap of successes in rA
+`11111aaaaaxxxxx001001xxxxxxxxxxx` - `ipi rA, all` - interrupt all cores, put bitmap of successes in rA
+
+Each core has one pending IPI payload slot. `ipi` succeeds for a target only
+when that core does not already have an IPI interrupt pending or active in
+`ISR`. If the target already has an outstanding IPI, the instruction reports
+failure for that target and does not overwrite `MBI`. `eoi 5` or `eoi all`
+clears the target core's outstanding IPI state.
 
 ### End of interrupt instruction
 ID - 00101
