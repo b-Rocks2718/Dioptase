@@ -116,6 +116,12 @@ jobs:
           for ok in Dioptase-OS/tests/*.ok; do
             if [ -e "$ok" ]; then
               test_name="${ok##*/}"
+              # Running the self-hosted bcc inside Dioptase is intentionally
+              # much slower than ordinary OS integration tests. Keep it as an
+              # explicit local test instead of multiplying it by every CI run.
+              if [ "$test_name" = "user_bcc_include_recursion.ok" ]; then
+                continue
+              fi
               os_fail_targets+=("${test_name%.ok}.fail")
             fi
           done
