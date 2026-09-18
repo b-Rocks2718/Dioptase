@@ -22,19 +22,20 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `cr1` = PID (holds PID of currently executing process, used as key by TLB)  
 `cr2` = ISR (interrupt status register, holds which interrupts are active)  
 `cr3` = IMR (interrupt mask register, enables various interrupts. Top bit enables/disables all interrupts)   
-`cr4` = EPC (exceptional PC, pc is placed here after interrupt, syscall, or exception)  
+`cr4` = EPC (exceptional PC, pc is placed here after interrupt, trap, or exception)  
 `cr5` = FLG (flags register)  
-`cr6` = EFG (exceptional flags). Flags are placed here when an interrupt, syscall, or exception happens  
-`cr7` = TLB (VPN is placed here when it causes a TLB miss)  
+`cr6` = EFG (exceptional flags). Flags are placed here when an interrupt, trap, or exception happens  
+`cr7` = TLBA (VPN is placed here when it causes a TLB miss)  
 `cr8` = KSP (kernel stack pointer, stack is set here on a user -> kernel switch)  
 `cr9` = CID (Read-only core ID register)  
 `cr10` = MBI (maibox in, data appears here when an IPI happens)  
 `cr11` = MBO (mailbox out, write data here and do an IPI to send the value to another core)  
+`cr12` = TLBF (TLB fault flags. Set on a TLB exception to the failing permission bits, or 0 when no TLB entry matched)  
 
 `ISR` (`cr2`) is read-only to `crmv`; software must use `eoi` to acknowledge
 interrupts.
 
-On interrupt/exception/syscall, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts
+On interrupt/exception/trap, top bit of IMR is unset to disable further interrupts. The kernel must set it after saving pc and flags to enable nested interrupts.
 
 OS page size: 4KB  
 Nexys a7 has 128MiB of memory, so this means we need to map 32 bit addresses to 27 bit addresses.  
@@ -305,19 +306,21 @@ If condition is met, branches to rB + pc + 4 and stores pc + 4 in rA (set rA as 
 `0111010001xxxxxxxxxxxxaaaaabbbbb` - `bb rA, rB`   (branch if below [unsigned])  
 `0111010010xxxxxxxxxxxxaaaaabbbbb` - `bbe rA, rB`  (branch if below or equal [unsigned]) 
 
-### Syscalls
+### Trap Instruction
 
 Opcode is 01111
 
-List will expand as we go
+The instruction itself carries no operands. Software selects the operation
+through the trap ABI:
 
-i is 8 bit immediate specifying which exception to raise
+- `r1` = trap code
+- `r2-r8` = trap-specific arguments
 
-`01111xxxxxxxxxxxxxxxxxxxiiiiiiii`
+`01111000000000000000000000000000` - `trap`
 
-For now, we’ll start with supporting
-
-`01111xxxxxxxxxxxxxxxxxxx00000000` - `sys EXIT`, returning control from the user code to the OS
+Specific trap codes are software-defined by the running environment. The current
+Dioptase-OS trap and syscall code assignments are documented in
+`Dioptase-OS/docs/syscalls.md`.
 
 ### Atomics
 
@@ -413,6 +416,14 @@ X - executable
 W - writable  
 R - readable   
 
+On a TLB exception, `cr12` (`TLBF`) stores the subset of required access bits that were missing from the selected entry:
+
+- read fault: bit 0 (`0x1`)
+- write fault: bit 1 (`0x2`)
+- execute fault: bit 2 (`0x4`)
+- user access to a kernel-only mapping: bit 3 (`0x8`)
+- true miss with no matching TLB entry: `0x0`
+
 `tlbr rA, rB` will use the PID and `(rB & 0xFFFFF000)` as a key and put the value in `rA`  
 `tlbw rA, rB` will use the PID and `(rB & 0xFFFFF000)` as a key and store `(rA & 0x7FFFFFF)` as the value in the TLB
 
@@ -430,11 +441,10 @@ ID - 00010
 `11111xxxxxxxxxx0001001xxxxxxxxxx` - `mode sleep` - (awakened by interrupt)  
 `11111xxxxxxxxxx0001010xxxxxxxxxx` - `mode halt` - (only way to exit is reset)
 
-### Return from exception/interrupt
+### Return from trap
 ID - 00011
 
-`11111xxxxxxxxxx000110xxxxxxxxxxx` - `rfe` - (return from exception) update kmode and jump to EPC, set flags to efg  
-`11111xxxxxxxxxx000111xxxxxxxxxxx` - `rfi` - (return from interrupt) update kmode and jump to EPC, set flags to efg, and reenable interrupts  
+`11111xxxxxxxxxx000110xxxxxxxxxxx` - `rfe` - return from trap, update kmode and jump to EPC, set flags to efg, and reenable interrupts. The alternate bit-11 encoding is reserved and must raise invalid instruction.  
 
 Leaves lots of unused opcodes, so the ISA can be expanded over time
 
@@ -443,7 +453,13 @@ ID - 00100
 
 `11111aaaaaxxxxx001000xxxxxxxxxnn` - `ipi rA, n` - interrupt core n, put success code in rA (1 => success, 0 => failure)  
 
-`11111aaaaaxxxxx001001xxxxxxxxxxx` - `ipi rA, all` - interrupt all other cores, put bitmap of successes in rA
+`11111aaaaaxxxxx001001xxxxxxxxxxx` - `ipi rA, all` - interrupt all cores, put bitmap of successes in rA
+
+Each core has one pending IPI payload slot. `ipi` succeeds for a target only
+when that core does not already have an IPI interrupt pending or active in
+`ISR`. If the target already has an outstanding IPI, the instruction reports
+failure for that target and does not overwrite `MBI`. `eoi 5` or `eoi all`
+clears the target core's outstanding IPI state.
 
 ### End of interrupt instruction
 ID - 00101
@@ -457,18 +473,18 @@ pending in the same window remain visible in `ISR`.
 
 ## Exceptions:
 
-All exceptions, interrupts, and syscalls cause the processor to enter kernel mode and jump to the address specified in the interrupt vector table (IVT).
+All exceptions, interrupts, and trap instructions cause the processor to enter kernel mode and jump to the address specified in the interrupt vector table (IVT).
+Trap entry snapshots `EPC`/`EFG` and clears `IMR[31]` before software can re-enable nested interrupts. Trap handlers therefore begin with global interrupts disabled, just like interrupt and exception handlers.
 
 ### Exception types:
 
 #### Index into interrupt vector table
 
 ```
-sys EXIT                       := 0x01 (0x004)
+Trap instruction               := 0x01 (0x004)
 Invalid instruction exception  := 0x80 (0x200)
 Privileges exception           := 0x81 (0x204)
-Tlb umiss exception            := 0x82 (0x208)
-Tlb kmiss exception            := 0x83 (0x20C)
+Tlb miss exception             := 0x82 (0x208)
 Misaligned pc exception        := 0x84 (0x210)
 Timer interrupt                := 0xF0 (0x3C0)
 Keyboard interrupt             := 0xF1 (0x3C4)
@@ -477,6 +493,7 @@ SD card 0 interrupt            := 0xF3 (0x3CC)
 VGA vblank interrupt           := 0xF4 (0x3D0)
 IPI interrupt                  := 0xF5 (0x3D4)
 SD card 1 interrupt            := 0xF6 (0x3D8)
+Audio interrupt                := 0xF7 (0x3DC)
 ```
 
 #### Interrupt bits in IMR/ISR
@@ -487,7 +504,8 @@ UART RX interrupt    := 0x00000004
 SD card 0 interrupt  := 0x00000008  
 VGA vblank interrupt := 0x00000010  
 IPI interrupt        := 0x00000020  
-SD card 1 interrupt  := 0x00000040
+SD card 1 interrupt  := 0x00000040  
+Audio interrupt      := 0x00000080
 ```
 
-Timer interrupt goes to all cores, IPI goes to the cores specified by the instruction. KB, UART, SD card 0, SD card 1, and VGA interrupts are sent to a single core whenever they happen. The core is chosen with a round-robin distribution.
+Timer interrupt goes to all cores, IPI goes to the cores specified by the instruction. KB, UART, SD card 0, SD card 1, VGA, and audio interrupts are sent to a single core whenever they happen. The core is chosen with a round-robin distribution.

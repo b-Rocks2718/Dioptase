@@ -11,6 +11,23 @@
 - `r30`: base pointer
 - `r31`: stack pointer 
 
+## Trap ABI
+
+The `trap` instruction uses a similar ABI to normal function calls:
+
+- `r1`: trap code
+- `r2-r8`: trap handler arguments
+- `r9-r19`: additional caller-saved registers
+- `r20-r31`: callee-saved registers
+
+For now, trap calls are limited to 7 scalar arguments. 
+
+Trap codes are software-defined by the running environment rather than the ISA
+or ABI itself. The current Dioptase-OS trap and syscall code assignments are
+documented in `Dioptase-OS/docs/syscalls.md`.
+
+If a trap handler has a return value, it uses the same convention as a function call (usually `r1` is the return value, with exceptions for returning structs)
+
 ## Stack Frame Structure
 
 Stack pointer and base pointer are expected to stay 4-byte aligned
@@ -29,7 +46,7 @@ bp-8 -> local 2
 sp   -> local n
 ```
 
-First 8 args are passed in r1-r8, remaining args are pushed in reverse order. ra is pushed, bp is pushed, bp is replaced with the current sp, and the call instruction places the return address in r31. The result is that arguments are above the new bp, and local variables are below it. 
+First 8 args are passed in r1-r8, remaining args are pushed in reverse order. ra is pushed, bp is pushed, bp is replaced with the current sp, and the call instruction places the return address in r29. The result is that arguments are above the new bp, and local variables are below it. 
 
 In assembly:
 
