@@ -1,0 +1,148 @@
+name: Software CI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: software-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  assembler:
+    name: Assembler
+    runs-on: ubuntu-24.04
+    # The suite normally finishes in seconds; this bound catches hung tools.
+    timeout-minutes: 30
+    steps:
+      - name: Check out root repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Initialize software submodules
+        run: bash .github/scripts/init-software-submodules.sh
+      - name: Run assembler CI
+        run: bash Dioptase-Assembler/.github/scripts/ci.sh
+
+  emulator_simple:
+    name: Simple emulator
+    runs-on: ubuntu-24.04
+    # The suite normally finishes in seconds; this bound catches hung tools.
+    timeout-minutes: 30
+    steps:
+      - name: Check out root repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Initialize software submodules
+        run: bash .github/scripts/init-software-submodules.sh
+      - name: Run simple emulator CI
+        run: bash Dioptase-Emulators/Dioptase-Emulator-Simple/.github/scripts/ci.sh
+
+  emulator_full:
+    name: Full emulator
+    runs-on: ubuntu-24.04
+    # Allow dependency compilation while still detecting a stuck emulator test.
+    timeout-minutes: 30
+    steps:
+      - name: Check out root repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Initialize software submodules
+        run: bash .github/scripts/init-software-submodules.sh
+      - name: Run full emulator CI
+        run: bash Dioptase-Emulators/Dioptase-Emulator-Full/.github/scripts/ci.sh
+
+  compiler:
+    name: C compiler
+    runs-on: ubuntu-24.04
+    # This includes fresh debug/release builds of both emulator dependencies.
+    timeout-minutes: 90
+    steps:
+      - name: Check out root repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Initialize software submodules
+        run: bash .github/scripts/init-software-submodules.sh
+      - name: Run compiler CI
+        run: bash Dioptase-Languages/Dioptase-C-Compiler/.github/scripts/ci.sh
+
+  os:
+    name: OS smoke suite
+    runs-on: ubuntu-24.04
+    # Five repetitions should remain far below GitHub's six-hour hosted limit.
+    timeout-minutes: 330
+    env:
+      DIOPTASE_OS_TEST_RUNS: "5"
+      DIOPTASE_OS_PARALLEL_JOBS: "4"
+    steps:
+      - name: Check out root repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Initialize software submodules
+        run: bash .github/scripts/init-software-submodules.sh
+      - name: Install ext2 image tools
+        run: |
+          if ! command -v mkfs.ext2 >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install --yes e2fsprogs
+          fi
+      - name: Run OS CI
+        run: bash Dioptase-OS/.github/scripts/ci.sh
+      - name: Upload OS failure outputs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: root-os-ci-failure-outputs
+          if-no-files-found: ignore
+          # Failure outputs are diagnostic scratch data, not release artifacts.
+          retention-days: 7
+          path: |
+            Dioptase-OS/tests/*.raw
+            Dioptase-OS/tests/*.out
+            Dioptase-OS/tests/*.out.dir/**
+            Dioptase-OS/build/*.labels
+
+  all_software:
+    name: All software submodules
+    if: always()
+    needs:
+      - assembler
+      - emulator_simple
+      - emulator_full
+      - compiler
+      - os
+    runs-on: ubuntu-24.04
+    # This job only checks the five fixed dependency results.
+    timeout-minutes: 5
+    steps:
+      - name: Require every software test job to pass
+        env:
+          ASSEMBLER_RESULT: ${{ needs.assembler.result }}
+          EMULATOR_SIMPLE_RESULT: ${{ needs.emulator_simple.result }}
+          EMULATOR_FULL_RESULT: ${{ needs.emulator_full.result }}
+          COMPILER_RESULT: ${{ needs.compiler.result }}
+          OS_RESULT: ${{ needs.os.result }}
+        run: |
+          failed=0
+          for result in \
+            "$ASSEMBLER_RESULT" \
+            "$EMULATOR_SIMPLE_RESULT" \
+            "$EMULATOR_FULL_RESULT" \
+            "$COMPILER_RESULT" \
+            "$OS_RESULT"; do
+            if [ "$result" != "success" ]; then
+              failed=1
+            fi
+          done
+
+          if [ "$failed" -ne 0 ]; then
+            echo "At least one non-Verilog submodule CI job did not succeed." >&2
+            exit 1
+          fi
