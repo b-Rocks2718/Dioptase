@@ -23,7 +23,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Initialize software submodules
-        run: bash .github/scripts/init-software-submodules.sh
+        run: bash .github/scripts/init-software-submodules.sh Dioptase-Assembler
       - name: Run assembler CI
         run: bash Dioptase-Assembler/.github/scripts/ci.sh
 
@@ -38,7 +38,9 @@ jobs:
         with:
           persist-credentials: false
       - name: Initialize software submodules
-        run: bash .github/scripts/init-software-submodules.sh
+        run: >-
+          bash .github/scripts/init-software-submodules.sh
+          Dioptase-Emulators/Dioptase-Emulator-Simple
       - name: Run simple emulator CI
         run: bash Dioptase-Emulators/Dioptase-Emulator-Simple/.github/scripts/ci.sh
 
@@ -53,7 +55,9 @@ jobs:
         with:
           persist-credentials: false
       - name: Initialize software submodules
-        run: bash .github/scripts/init-software-submodules.sh
+        run: >-
+          bash .github/scripts/init-software-submodules.sh
+          Dioptase-Emulators/Dioptase-Emulator-Full
       - name: Run full emulator CI
         run: bash Dioptase-Emulators/Dioptase-Emulator-Full/.github/scripts/ci.sh
 
@@ -68,7 +72,12 @@ jobs:
         with:
           persist-credentials: false
       - name: Initialize software submodules
-        run: bash .github/scripts/init-software-submodules.sh
+        run: >-
+          bash .github/scripts/init-software-submodules.sh
+          Dioptase-Assembler
+          Dioptase-Emulators/Dioptase-Emulator-Simple
+          Dioptase-Emulators/Dioptase-Emulator-Full
+          Dioptase-Languages/Dioptase-C-Compiler
       - name: Run compiler CI
         run: bash Dioptase-Languages/Dioptase-C-Compiler/.github/scripts/ci.sh
 
@@ -86,7 +95,12 @@ jobs:
         with:
           persist-credentials: false
       - name: Initialize software submodules
-        run: bash .github/scripts/init-software-submodules.sh
+        run: >-
+          bash .github/scripts/init-software-submodules.sh
+          Dioptase-Assembler
+          Dioptase-Emulators/Dioptase-Emulator-Full
+          Dioptase-Languages/Dioptase-C-Compiler
+          Dioptase-OS
       - name: Install ext2 image tools
         run: |
           if ! command -v mkfs.ext2 >/dev/null 2>&1; then

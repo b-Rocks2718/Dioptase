@@ -5,6 +5,25 @@ MAKE_DEFAULT_DIRS := ./Dioptase-CPUs/Dioptase-Pipe-Simple ./Dioptase-CPUs/Diopta
 MAKE_DIRS := ./Dioptase-Assembler $(MAKE_DEFAULT_DIRS) ./Dioptase-Languages/Dioptase-C-Compiler
 MAKEFLAGS += --no-print-directory
 SHELL := /bin/bash
+PYTHON ?= python3
+.DEFAULT_GOAL := all
+
+# Optional host development checks; existing builds and tests retain their flags.
+.PHONY: analysis analysis-software analysis-c analysis-rust analysis-rtl
+analysis:
+	$(PYTHON) scripts/static_analysis.py all
+
+analysis-software:
+	$(PYTHON) scripts/static_analysis.py software
+
+analysis-c:
+	$(PYTHON) scripts/static_analysis.py c
+
+analysis-rust:
+	$(PYTHON) scripts/static_analysis.py rust
+
+analysis-rtl:
+	$(PYTHON) scripts/static_analysis.py rtl
 
 .PHONY: all test release test-release build-cargo-projects build-make-projects build-release-make-projects test-cargo-projects test-make-projects
 

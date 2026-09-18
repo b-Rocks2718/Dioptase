@@ -1,5 +1,7 @@
 # Dioptase
 
+[![Software CI](https://github.com/b-Rocks2718/Dioptase/actions/workflows/software-ci.yml/badge.svg?branch=main)](https://github.com/b-Rocks2718/Dioptase/actions/workflows/software-ci.yml)
+
 Top level repo for the Dioptase project.  
 32-bit evolution of the [JPEB project](https://github.com/PaulBailey-1/JPEB)
 
@@ -25,6 +27,14 @@ Pull the updates with `git pull --recurse-submodules`
 
 `make test` will test all the subrepos
 
+`make analysis` runs Clang Static Analyzer, Rust Clippy, and Verilator lint.
+See [static analysis setup and reports](docs/static-analysis.md) for dependencies,
+component-specific commands, and limitations.
+Each software submodule's CI script runs its corresponding C or Rust analysis;
+Verilog lint remains a local, optional check.
+See [CI dependency model](docs/ci.md) for how hosted subrepo and root workflows
+select compatible versions of sibling repositories.
+
 `source env.sh` to add `basm`, `bemu`, and `bcc` to `PATH`  
 `env.sh` also exports `DIOPTASE_ROOT` for portable tool lookup
 - Assembler CRT lookup: `DIOPTASE_CRT_DIR` (preferred) or `DIOPTASE_ROOT` + `Dioptase-OS/root/crt`
@@ -42,5 +52,3 @@ Pull the updates with `git pull --recurse-submodules`
 - Languages:
   - [C Compiler](https://github.com/b-Rocks2718/Dioptase-C-Compiler) (Good enough for now)
 - [OS](https://github.com/b-Rocks2718/Dioptase-OS) (In progress)
-
-[![Dioptase Tests](https://github.com/b-Rocks2718/Dioptase/actions/workflows/dioptase-os-tests.yml/badge.svg?branch=main)](https://github.com/b-Rocks2718/Dioptase/actions/workflows/dioptase-os-tests.yml)
