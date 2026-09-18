@@ -40,6 +40,7 @@ jobs:
       - name: Initialize software submodules
         run: >-
           bash .github/scripts/init-software-submodules.sh
+          Dioptase-Assembler
           Dioptase-Emulators/Dioptase-Emulator-Simple
       - name: Run simple emulator CI
         run: bash Dioptase-Emulators/Dioptase-Emulator-Simple/.github/scripts/ci.sh
@@ -57,6 +58,7 @@ jobs:
       - name: Initialize software submodules
         run: >-
           bash .github/scripts/init-software-submodules.sh
+          Dioptase-Assembler
           Dioptase-Emulators/Dioptase-Emulator-Full
       - name: Run full emulator CI
         run: bash Dioptase-Emulators/Dioptase-Emulator-Full/.github/scripts/ci.sh
