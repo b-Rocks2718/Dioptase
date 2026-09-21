@@ -9,7 +9,8 @@ PYTHON ?= python3
 .DEFAULT_GOAL := all
 
 # Optional host development checks; existing builds and tests retain their flags.
-.PHONY: analysis analysis-software analysis-c analysis-rust analysis-rtl
+.PHONY: analysis analysis-software analysis-c analysis-rust analysis-rtl \
+	valgrind valgrind-c valgrind-assembler valgrind-compiler
 analysis:
 	$(PYTHON) scripts/static_analysis.py all
 
@@ -24,6 +25,25 @@ analysis-rust:
 
 analysis-rtl:
 	$(PYTHON) scripts/static_analysis.py rtl
+
+# Memcheck is meaningful for the native C tools. Guest binaries execute on the
+# Dioptase ISA, while the Rust emulators are covered by Clippy and Rust tests.
+valgrind: valgrind-c
+
+valgrind-c:
+	@status=0; \
+	for script in \
+		./Dioptase-Assembler/.github/scripts/valgrind.sh \
+		./Dioptase-Languages/Dioptase-C-Compiler/.github/scripts/valgrind.sh; do \
+		bash "$$script" || status=1; \
+	done; \
+	exit $$status
+
+valgrind-assembler:
+	bash ./Dioptase-Assembler/.github/scripts/valgrind.sh
+
+valgrind-compiler:
+	bash ./Dioptase-Languages/Dioptase-C-Compiler/.github/scripts/valgrind.sh
 
 .PHONY: all test release test-release build-cargo-projects build-make-projects build-release-make-projects test-cargo-projects test-make-projects
 

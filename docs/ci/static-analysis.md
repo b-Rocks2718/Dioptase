@@ -1,8 +1,5 @@
 # Static analysis
 
-See [initial findings and verification results](static-analysis-findings.md)
-for the first run's triage.
-
 Run from the repository root:
 
 ```sh
@@ -79,17 +76,20 @@ constraint. Naming and unused-signal warnings also count as attention.
 
 These are host development tools. The C check does not analyze the guest OS:
 using host type sizes, assembly rules, or threading assumptions there would not
-validate Dioptase's ABI or concurrency model. Sanitizers, fuzzing, and formal
-verification are separate work. Existing test recipes are unchanged.
+validate Dioptase's ABI or concurrency model. Valgrind Memcheck is configured
+separately for the host-native C tools; see
+[dynamic memory analysis](dynamic-analysis.md). Sanitizers, fuzzing, and formal
+verification remain separate work. Existing functional test recipes are
+unchanged.
 
 ## CI
 
 Each software submodule owns its analysis in `.github/scripts/ci.sh`. The
 assembler and compiler scripts run their debug/release suites, allocation
-regression tests, and Clang Static Analyzer. Each emulator script runs Clippy
-plus debug/release tests. Their standalone PR workflows and the root hosted
-`software-ci.yml` workflow call the same scripts, so neither CI path can omit
-analysis accidentally.
+regression tests, Clang Static Analyzer, and the separately documented
+Memcheck policy. Each emulator script runs Clippy plus debug/release tests.
+Their standalone PR workflows and the root hosted `software-ci.yml` workflow
+call the same scripts, so neither CI path can omit analysis accidentally.
 
 The root `make analysis-software` command remains a convenient way to run all
 four analyzers locally and save reports. CI diagnostics appear in the owning

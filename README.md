@@ -32,6 +32,12 @@ See [static analysis setup and reports](docs/static-analysis.md) for dependencie
 component-specific commands, and limitations.
 Each software submodule's CI script runs its corresponding C or Rust analysis;
 Verilog lint remains a local, optional check.
+
+`make valgrind` runs Valgrind Memcheck over the native assembler and compiler
+debug suites. These checks also run automatically in both tools' CI jobs. See
+[dynamic memory analysis](docs/dynamic-analysis.md) for scope, dependencies,
+and component-specific commands.
+
 See [CI dependency model](docs/ci.md) for how hosted subrepo and root workflows
 select compatible versions of sibling repositories.
 

@@ -99,6 +99,24 @@ If behavior is not specified:
 
 Commenting requirements depend on the part of the codebase:
 
+Every user-defined type and function must have at least a one-line comment that
+states what it represents or does. Comments should be concise prose that
+explains the definition's purpose, non-obvious behavior, or an important
+contract. Outside assembly, do not use template fields such as `Purpose:`,
+`Inputs:`, `Outputs:`, or `Invariants/Assumptions:`. Do not narrate parameters,
+return values, or implementation details that are already obvious from the
+name, signature, types, and nearby code. State genuine preconditions, ownership
+or lifetime rules, failure behavior, concurrency requirements, and
+architectural constraints when they are not obvious, using natural prose.
+Do not satisfy this rule by mechanically expanding an identifier into phrases
+such as "Handle X" or "Represent X." Automated comment generation must inspect
+the definition's semantics, and its output must be reviewed for accuracy and
+usefulness.
+
+Assembly routines may use explicit `Inputs:` and `Outputs:` labels to document
+register-based interfaces that have no type signature. Keep genuine register
+contracts, clobbers, privilege assumptions, and control-flow requirements.
+
 ### Kernel / OS Code / Hardware Verilog
 (Applies to paths matching: Dioptase-OS/, Dioptase-CPUs/)
 

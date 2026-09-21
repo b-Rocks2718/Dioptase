@@ -47,6 +47,7 @@ def run_job(name, directory, commands, report_dir):
 
 
 def main():
+    """Run the selected analysis jobs and summarize their status."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("component", choices=("all", "software", "c", "rust", "rtl"),
                         nargs="?", default="all")
