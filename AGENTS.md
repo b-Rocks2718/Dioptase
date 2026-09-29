@@ -99,6 +99,24 @@ If behavior is not specified:
 
 Commenting requirements depend on the part of the codebase:
 
+Every user-defined type and function must have at least a one-line comment that
+states what it represents or does. Comments should be concise prose that
+explains the definition's purpose, non-obvious behavior, or an important
+contract. Outside assembly, do not use template fields such as `Purpose:`,
+`Inputs:`, `Outputs:`, or `Invariants/Assumptions:`. Do not narrate parameters,
+return values, or implementation details that are already obvious from the
+name, signature, types, and nearby code. State genuine preconditions, ownership
+or lifetime rules, failure behavior, concurrency requirements, and
+architectural constraints when they are not obvious, using natural prose.
+Do not satisfy this rule by mechanically expanding an identifier into phrases
+such as "Handle X" or "Represent X." Automated comment generation must inspect
+the definition's semantics, and its output must be reviewed for accuracy and
+usefulness.
+
+Assembly routines may use explicit `Inputs:` and `Outputs:` labels to document
+register-based interfaces that have no type signature. Keep genuine register
+contracts, clobbers, privilege assumptions, and control-flow requirements.
+
 ### Kernel / OS Code / Hardware Verilog
 (Applies to paths matching: Dioptase-OS/, Dioptase-CPUs/)
 
@@ -204,8 +222,25 @@ are forbidden unless explicitly justified.
 
 ## Constants & Magic Numbers
 
-- All constants must be named and justified.
-- Magic numbers without architectural justification are forbidden.
+- Values with architectural or protocol meaning (addresses, register fields,
+  sizes and limits from a spec, interrupt numbers) must be named and justified.
+- Magic numbers without architectural justification are forbidden in
+  production code.
+- Name a value because the name adds information or keeps copies in sync
+  (a size used as both an array length and a loop bound, a tuning knob). Do
+  not name a value just to avoid writing a literal.
+
+### Constants in Tests
+
+- Write arbitrary test inputs and their expected results as literals at the
+  point of use (`int a = 2;`, `if (sum != 0 + 1 + 2 + 3 + 4)`). The reader
+  should be able to check the expectation without looking anything up.
+- Do not `#define` single-use values, values whose name only restates the
+  number (`TEST_TWO 2`, `DOT_NAME_BYTES 1`), or expected results derived from
+  other constants; write the expression instead.
+- Named constants in tests are appropriate for hardware addresses and other
+  architectural values, and for parameters used in several places that
+  someone may want to tune (thread counts, iteration counts, timeouts).
 
 ---
 

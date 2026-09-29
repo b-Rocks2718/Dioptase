@@ -2,3 +2,6 @@ debugging/*
 mos_notes/*_report.md
 .codex
 .mcp.json
+/build/static-analysis/
+/scripts/__pycache__/
+/tests/static_analysis/__pycache__/
