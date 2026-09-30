@@ -45,11 +45,11 @@ valgrind-assembler:
 valgrind-compiler:
 	bash ./Dioptase-Languages/Dioptase-C-Compiler/.github/scripts/valgrind.sh
 
-.PHONY: all test release test-release build-cargo-projects build-make-projects build-release-make-projects test-cargo-projects test-make-projects
+.PHONY: all test release test-release build-cargo-projects build-make-projects build-release-make-projects build-os build-os-release test-cargo-projects test-make-projects
 
-all: build-cargo-projects build-make-projects
+all: build-os
 
-release: build-cargo-projects build-release-make-projects
+release: build-os-release
 
 test:
 	@set -o pipefail; \
@@ -213,21 +213,21 @@ test-release:
 	true
 
 build-cargo-projects:
-	@for dir in $(CARGO_DIRS); do \
+	@set -e; for dir in $(CARGO_DIRS); do \
 		echo ">>> building $$dir"; \
 		(cd $$dir && cargo build --release); \
 		echo ; \
 	done
 
 build-make-projects:
-	@for dir in $(MAKE_DIRS); do \
+	@set -e; for dir in $(MAKE_DIRS); do \
 		echo ">>> building $$dir"; \
 		(cd $$dir && make all); \
 		echo ; \
 	done
 
 build-release-make-projects:
-	@for dir in $(MAKE_RELEASE_DIRS); do \
+	@set -e; for dir in $(MAKE_RELEASE_DIRS); do \
 		echo ">>> building $$dir"; \
 		(cd $$dir && make release); \
 		echo ; \
@@ -237,6 +237,13 @@ build-release-make-projects:
 		(cd $$dir && make all); \
 		echo ; \
 	done
+
+# Build the OS after its host tools and CPU simulations are ready.
+build-os: build-cargo-projects build-make-projects
+	$(MAKE) -C Dioptase-OS all
+
+build-os-release: build-cargo-projects build-release-make-projects
+	$(MAKE) -C Dioptase-OS all
 
 test-cargo-projects:
 	@for dir in $(CARGO_DIRS); do \
