@@ -129,6 +129,22 @@ But i = 0x0F and y = 2 decodes as 0x000F0000
 
 some instruction space to expand this over time
 
+### ALU flags and edge cases
+
+These rules apply to both the register and immediate ALU forms.
+
+- Every ALU instruction rewrites all four flags. Zero and Sign come from the 32-bit result (Sign is bit 31). Bitwise and sign-extend/truncate instructions clear Carry.
+- `add` / `addc`: Carry is the carry out of bit 31 (`addc` also adds the incoming Carry). Overflow is set when both operands have the same sign and the result's sign differs.
+- `sub` / `subb` compute `x + ~y + c`, where `x - y` is the operation (`rB - rC` for the register form, `i - rB` for the immediate form) and `c` is 1 for `sub` and the incoming Carry for `subb`. Carry set therefore means "no borrow". Overflow is set when `x` and `y` have different signs and the result's sign differs from `x`.
+- Shifts and rotates set Carry when any bit shifted out of the register is 1, and clear it otherwise. A shift or rotate by 0 leaves the value unchanged and clears Carry.
+- Register-form shift amounts use the full 32-bit value of `rC` (immediate amounts are 5 bits):
+  - `lsl` / `lsr` by 32 or more produce 0.
+  - `asr` by 32 or more fills the result with the sign bit (0 or 0xFFFFFFFF).
+  - For an amount `n` with `1 <= n <= 32`, `lslc` shifts the incoming Carry into bit `n - 1` and `lsrc` shifts it into bit `32 - n`. For `n` above 32 both produce 0.
+  - `rotl` / `rotr` rotate by the amount modulo 32.
+- Overflow after bitwise, shift, rotate, and sign-extend/truncate instructions is implementation-defined; software must not rely on it.
+- ALU encodings not listed above (register ops 22-31, immediate ops 18-31) are invalid instructions.
+
 ### lui (Load Upper Immediate)
 
 Opcode is 00010
