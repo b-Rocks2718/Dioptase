@@ -28,8 +28,7 @@ rounded down to make it aligned (might change this later to have it raise an exc
 `cr7` = TLBA (VPN is placed here when it causes a TLB miss)  
 `cr8` = KSP (kernel stack pointer, stack is set here on a user -> kernel switch)  
 `cr9` = CID (Read-only core ID register)  
-`cr10` = MBI (maibox in, data appears here when an IPI happens)  
-`cr11` = MBO (mailbox out, write data here and do an IPI to send the value to another core)  
+`cr10`, `cr11` = reserved. `crmv` naming either one raises an invalid instruction exception.  
 `cr12` = TLBF (TLB fault flags. Set on a TLB exception to the failing permission bits, or 0 when no TLB entry matched)  
 
 `ISR` (`cr2`) is read-only to `crmv`; software must use `eoi` to acknowledge
@@ -451,15 +450,17 @@ Leaves lots of unused opcodes, so the ISA can be expanded over time
 ### Inter-processor interrupts
 ID - 00100
 
-`11111aaaaaxxxxx001000xxxxxxxxxnn` - `ipi rA, n` - interrupt core n, put success code in rA (1 => success, 0 => failure)  
+`11111xxxxxxxxxx001000xxxxxxxxxnn` - `ipi n` - interrupt core n  
 
-`11111aaaaaxxxxx001001xxxxxxxxxxx` - `ipi rA, all` - interrupt all cores, put bitmap of successes in rA
+`11111xxxxxxxxxx001001xxxxxxxxxxx` - `ipi all` - interrupt all cores, including the sender
 
-Each core has one pending IPI payload slot. `ipi` succeeds for a target only
-when that core does not already have an IPI interrupt pending or active in
-`ISR`. If the target already has an outstanding IPI, the instruction reports
-failure for that target and does not overwrite `MBI`. `eoi 5` or `eoi all`
-clears the target core's outstanding IPI state.
+`ipi` always succeeds and writes no register. An IPI sent to a core whose IPI
+bit is already set in `ISR` (pending, or active while its handler runs) merges
+into that bit, so several IPIs can be observed as one interrupt. A handler must
+therefore execute `eoi 5` before reading the shared-memory request data: an IPI
+sent after the `eoi` sets the bit again and raises a new interrupt, while one
+merged before the `eoi` is covered by the read that follows it. `ipi n` to a
+core that does not exist has no effect.
 
 ### End of interrupt instruction
 ID - 00101

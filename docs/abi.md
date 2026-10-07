@@ -28,6 +28,9 @@ documented in `Dioptase-OS/docs/syscalls.md`.
 
 If a trap handler has a return value, it uses the same convention as a function call (usually `r1` is the return value, with exceptions for returning structs)
 
+Dioptase-OS additionally returns a syscall failure cause in `r2` (0 when none
+is reported); see "Error Reporting" in `Dioptase-OS/docs/syscalls.md`.
+
 ## Stack Frame Structure
 
 Stack pointer and base pointer are expected to stay 4-byte aligned
