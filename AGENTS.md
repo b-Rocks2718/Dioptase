@@ -23,7 +23,7 @@ Codex must:
 The authoritative documentation for this project lives at the following paths:
 
 ### ISA Specification
-./docs/ISA
+./docs/ISA.md
 
 ### ABI / Calling Convention
 ./docs/abi.md

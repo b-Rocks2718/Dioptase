@@ -106,7 +106,7 @@ If a struct fits into a single register and there is a register available, the s
 ## Types
 Signed/unsigned versions of each type share the same size.  
 
-`char`: 1 byte  
+`char`: 1 byte, signed (plain `char` has the same range as `signed char`)  
 `short`: 2 bytes  
 `int`: 4 bytes  
 `long`: 8 bytes  

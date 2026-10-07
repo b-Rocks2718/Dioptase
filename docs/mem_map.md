@@ -8,7 +8,7 @@ Interrupt Vector Table
 ### 0x0000400 - ....
 BIOS init. PC will be initialized to 0x00400 on startup
 
-## 0x7FB8000 - 0x7FBBBFF
+## 0x7FB8000 - 0x7FBBFFF
 Audio output ring buffer. Fixed-size 16 KiB device-owned storage exposed through MMIO.
 
 Notes:
