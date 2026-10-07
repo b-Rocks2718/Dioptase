@@ -51,10 +51,10 @@ select compatible versions of sibling repositories.
 - [Assembler](https://github.com/b-Rocks2718/Dioptase-Assembler) (Done)
 - Emulators:
   - [User ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Simple) (Done)
-  - [Full ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Full) (Done except for mouse and sound)
+  - [Full ISA Emulator](https://github.com/b-Rocks2718/Dioptase-Emulator-Full) (Done)
 - Processors:
   - [User ISA Pipeline](https://github.com/b-Rocks2718/Dioptase-Pipe-Simple) (Done)
   - [Full ISA Pipeline](https://github.com/b-Rocks2718/Dioptase-Pipe-Full) (In progress)
 - Languages:
-  - [C Compiler](https://github.com/b-Rocks2718/Dioptase-C-Compiler) (Good enough for now)
-- [OS](https://github.com/b-Rocks2718/Dioptase-OS) (In progress)
+  - [C Compiler](https://github.com/b-Rocks2718/Dioptase-C-Compiler) (Good enough)
+- [OS](https://github.com/b-Rocks2718/Dioptase-OS) (Good enough)

@@ -77,6 +77,40 @@ PIT. Write a 32 bit value `n` and the timer will cause
 an interrupt every `n` clock cycles (clock at 100MHz).
 In multicore configurations, the PIT countdown is shared across cores and advanced by core 0 only. Timer interrupts are delivered to all cores.
 
+### 0x7FE5808 - 0x7FE580B
+PS/2 mouse input stream (read-only, 32-bit little-endian). Reads `0` when no
+event is queued, otherwise one relative mouse event:
+
+- bit 0: LEFT (1 = left button held)
+- bit 1: RIGHT (1 = right button held)
+- bit 2: MIDDLE (1 = middle button held)
+- bit 3: VALID (always 1 in an event, so an event is never `0`)
+- bits [7:4]: reserved, read as 0
+- bits [15:8]: DX, signed 8-bit horizontal motion; positive = right
+- bits [23:16]: DY, signed 8-bit vertical motion; positive = down (screen
+  direction, the opposite of the raw PS/2 wire convention)
+- bits [31:24]: WHEEL, signed 8-bit scroll-wheel detents; positive = scroll
+  down (wheel rotated toward the user)
+
+Notes:
+- Bits [3:0] match byte 0 of a standard PS/2 mouse packet.
+- Software must read the stream with a single aligned 32-bit load. Reading
+  byte 0 peeks at the oldest event and reading byte 3 consumes it, so byte and
+  halfword loads have unspecified results.
+- Writes to any byte of the stream are an error.
+- Button bits report the button state at the time of the event, not a change.
+  Software detects presses and releases by comparing with the previous event.
+- Motion is in 640x480 screen-pixel units (the tile-layer resolution).
+  Movement larger than a signed byte is split across several events.
+- The device may merge consecutive queued motion events that have the same
+  button state. It never merges a button-state change into another event, so
+  no press or release is lost by merging.
+- The queue depth is implementation-defined. When the queue is full, new events
+  are discarded. Because every event carries the full button state, the next
+  accepted event resynchronizes software's view of the buttons.
+- The PS/2 mouse interrupt (see `docs/ISA.md`) is pending while at least one
+  event is queued.
+
 ### 0x7FE5810 - 0x7FE5827
 SD card 0 DMA engine.
 
