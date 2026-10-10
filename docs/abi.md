@@ -31,6 +31,21 @@ If a trap handler has a return value, it uses the same convention as a function 
 Dioptase-OS additionally returns a syscall failure cause in `r2` (0 when none
 is reported); see "Error Reporting" in `Dioptase-OS/docs/syscalls.md`.
 
+## Arithmetic Helper Routines
+
+Dioptase has no multiply, divide, or modulo instruction, so the C compiler
+lowers those operations to calls to runtime helpers: `smul`, `sdiv`, `smod`,
+`umul`, `udiv`, and `umod`. Each takes its operands in `r1` and `r2` and
+returns its result in `r1`.
+
+These helpers have a narrower contract than ordinary functions: they may
+modify only `r1-r8`, and must preserve `r9-r31` (except `r29`, which the
+`call` itself overwrites). The compiler relies on this to keep values in
+`r9-r19` across a multiply, divide, or modulo. Every implementation (the user
+crt, kernel, and test runtimes) must honor it; in particular a helper must not
+call an ordinary function, since that callee could modify any caller-saved
+register.
+
 ## Stack Frame Structure
 
 Stack pointer and base pointer are expected to stay 4-byte aligned
