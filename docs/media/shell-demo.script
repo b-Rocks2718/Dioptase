@@ -1,0 +1,15 @@
+# Headless input script for scripts/record_shell_demo.sh: frame-numbered key events
+# (60 frames/s) driving the Dioptase shell. Format: Dioptase-Emulator-Full/src/headless.rs.
+200 type ls
+240 key enter
+330 type cd hello
+390 key enter
+440 type ls
+470 key enter
+560 type cat hello.c
+640 key enter
+760 type ./bmake
+820 key enter
+1500 type ./hello
+1550 key enter
+1700 exit

@@ -7,6 +7,11 @@ Top level repo for the Dioptase project.
 
 The goal is to build an FPGA computer from scratch - creating an ISA, verilog processor, assembler, compiler, and OS.
 
+![The Dioptase shell compiling and running hello.c on the emulated machine](docs/media/shell-demo.gif)
+
+*The Dioptase OS shell running in the full-system emulator: browsing the filesystem,
+then compiling, assembling, and running a C program entirely on the Dioptase machine.*
+
 [ISA](https://github.com/b-Rocks2718/Dioptase/blob/main/docs/ISA.md)  
 [ABI](https://github.com/b-Rocks2718/Dioptase/blob/main/docs/abi.md)  
 [Memory Map](https://github.com/b-Rocks2718/Dioptase/blob/main/docs/mem_map.md)  
